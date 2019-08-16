@@ -3,24 +3,18 @@ import {Menu, Grid, Button} from 'semantic-ui-react';
 import LogIn from '../logIn/LogIn';
 
 
-let styles = theme => ({
-    Menu:{
-        marginBottom: theme.spacing(98),
-    }
-});
-
 class Home extends Component {
     state = {}
 
     handleItemClick = (e, { name }) => this.setState({ activeItem: name })
     
     render() {
-        const { activeItem } = this.state
+        const { activeItem } = this.state;
         
         return (
             <div class="ui container">
                 <Grid columns={1} divided>
-                    <Grid.Row>
+                    <Grid.Row style={{marginBottom: 150}}>{/*Ver porque no puedo crear un objeto con props css*/}
                         <Grid.Column>
                             <Menu>
                                 <Menu.Item
@@ -45,9 +39,7 @@ class Home extends Component {
                             </Menu>
                         </Grid.Column>
                     </Grid.Row>
-                    <Grid.Row></Grid.Row>
-                    <Grid.Row></Grid.Row>
-                    <Grid.Row></Grid.Row>
+                   
                     <Grid.Row>
                         <Grid.Column> 
                             <LogIn/>

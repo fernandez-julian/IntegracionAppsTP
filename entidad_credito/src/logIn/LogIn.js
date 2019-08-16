@@ -10,11 +10,12 @@ import {
   Segment
 } from 'semantic-ui-react';
 
-let styles = theme => ({
-    LogIn: {
+const Style = {
+    logIn:{
         backgroundColor: 'white',
-    },
-});
+    }
+    
+}
 
 class LogIn extends Component {
 
@@ -28,8 +29,10 @@ class LogIn extends Component {
         }
       };
 
+      //let { classes } = this.props;
+
     return (
-      <div className="LogIn">
+      <div style={Style.logIn}>
         <Grid textAlign="center" verticalAlign="middle">
           <Grid.Column style={{ maxWidth: 450 }}>
             <Header as="h2" color="olive" textAlign="center">
