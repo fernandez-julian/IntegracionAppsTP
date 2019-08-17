@@ -14,7 +14,6 @@ const Style = {
     logIn:{
         backgroundColor: 'white',
     }
-    
 }
 
 class LogIn extends Component {
@@ -28,8 +27,6 @@ class LogIn extends Component {
           preserveAspectRatio: "xMidYMid slice"
         }
       };
-
-      //let { classes } = this.props;
 
     return (
       <div style={Style.logIn}>
