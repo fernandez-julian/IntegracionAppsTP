@@ -12,7 +12,7 @@ class Home extends Component {
         const { activeItem } = this.state;
         
         return (
-            <div class="ui container">
+            <div class="ui container" >
                 <Grid columns={1} divided>
                     <Grid.Row style={{marginBottom: 150}}>{/*Ver porque no puedo crear un objeto con props css*/}
                         <Grid.Column>

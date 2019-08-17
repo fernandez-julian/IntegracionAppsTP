@@ -9,17 +9,21 @@ class App extends React.Component {//
 /*Si cumple -> mostrar correspondiente pagina
 */
   state = {
-    loggedIn: false,//momentaneamente cambiar entre true y false para ver la pagina del usr
+    loggedIn: true,//momentaneamente cambiar entre true y false para ver la pagina del usr
   };
 
   logIn = () => {
     this.setState({ loggedIn: true });
   }
 
+  logOut = () =>{
+    this.setState({ loggedIn: false });
+  }
+
   render = () => {
     if(this.state.loggedIn){
       return(
-        <UserPage/>
+        <UserPage logOut={this.logOut}/>
       );
     }
     else{

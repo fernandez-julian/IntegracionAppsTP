@@ -1,15 +1,16 @@
 import React, { Component } from "react";
 import card from './creditCard.png';
-import usr from './usr.png';
+import ModalUser from './ModalUser';
 import {
   Container,
   Dropdown,
   Header,
   Image,
   Menu,
-  Modal,
-  Button,
   Icon,
+  Divider,
+  Segment,
+  Statistic,
 } from 'semantic-ui-react';
 
 class UserPage extends Component {
@@ -25,6 +26,10 @@ class UserPage extends Component {
         this.setState({ openModalUsr: false });
     }
 
+    handleLogOut = () =>{
+        this.props.logOut();
+    };
+
     render() {
         return (
             <div>
@@ -35,7 +40,7 @@ class UserPage extends Component {
                     Tarjeta de credito
                     </Menu.Item>
                     <Menu.Item as='a'>Inicio</Menu.Item>
-                    <Menu.Item onClick={this.handleOpenModalUsr} as='a'>Usuario</Menu.Item>
+                    <Menu.Item as='a' onClick={this.handleOpenModalUsr}>Usuario</Menu.Item>
 
                     <Dropdown item simple text='Dropdown'>
                     <Dropdown.Menu>
@@ -54,35 +59,53 @@ class UserPage extends Component {
                         <Dropdown.Item>List Item</Dropdown.Item>
                     </Dropdown.Menu>
                     </Dropdown>
-                    <Menu.Item position='right' as='a'>Cerrar sesión</Menu.Item>
+                    <Menu.Item position='right' as='a' onClick={this.handleLogOut}>Cerrar sesión</Menu.Item>
                 </Container>
                 </Menu>
 
-                <Container text style={{ marginTop: '10px', borderStyle: 'solid',borderColor: 'red'}}>
-                <Header as='h1'>Titulo</Header>
-                <p>Amet adipisicing veniam nostrud pariatur officia sunt aute nulla. Consequat culpa excepteur id aute dolore deserunt tempor ex aliquip quis aliquip do. Ex officia ullamco magna sit duis culpa enim minim do occaecat irure. Cupidatat id eu veniam culpa mollit duis velit ea. Cupidatat anim cillum incididunt duis culpa.
+                <Container>
+                    <Segment >
+                        <Header as='h3'>sección uno (Pueden ir estadisticas)</Header>
+                        <Statistic.Group>
+                            <Statistic>
+                                <Statistic.Value>22</Statistic.Value>
+                                <Statistic.Label>MOVIMIENTOS</Statistic.Label>
+                            </Statistic>
 
-                    Officia in eu culpa enim id incididunt do irure ea ut dolor duis consequat. Aliqua sunt culpa amet incididunt ad in. Amet ea aliqua commodo ullamco elit dolor esse veniam dolore consectetur. Occaecat sit laborum aliquip commodo non cillum nisi enim nulla ut. Officia enim anim elit sint. Dolor pariatur occaecat reprehenderit voluptate non adipisicing et sint minim tempor.</p>
-                <p>
-                    A text container is used for the main container, which is useful for single column layouts.
-                </p>
+                            <Statistic>
+                                <Statistic.Value text>
+                                    TRES<br />
+                                    MIL
+                                </Statistic.Value>
+                                <Statistic.Label>SUSCRIPCIONES</Statistic.Label>
+                            </Statistic>
+
+                            <Statistic>
+                                <Statistic.Value>
+                                    <Icon name='plane' />
+                                    5
+                                </Statistic.Value>
+                                <Statistic.Label>VUELOS</Statistic.Label>
+                            </Statistic>
+
+                            <Statistic>
+                                <Statistic.Value>
+                                    <Image src='https://react.semantic-ui.com/images/avatar/small/joe.jpg' inline circular />
+                                    42
+                                </Statistic.Value>
+                                <Statistic.Label>....</Statistic.Label>
+                            </Statistic>
+                        </Statistic.Group>
+
+                        <Divider section />
+
+                        <Header as='h3'>sección dos</Header>
+                        <Image src='https://react.semantic-ui.com/images/wireframe/short-paragraph.png' />
+                    </Segment>
                 </Container>
-                <Modal open={this.state.openModalUsr} onClose={this.handleCloseModalUsr}>
-                    <Modal.Header>Nombre de usuario</Modal.Header>
-                    <Modal.Content image>
-                    <Image wrapped size='medium' src={usr} />
-                    <Modal.Description>
-                        <Header>titulo</Header>
-                        <p>-----------------------------------------------.</p>
-                        <p>-----------------------------------------------.</p>
-                    </Modal.Description>
-                    </Modal.Content>
-                    <Modal.Actions>
-                        <Button color='red' onClick={this.handleCloseModalUsr} inverted>
-                            <Icon name='window close' /> Cerrar
-                        </Button>
-                    </Modal.Actions>
-                </Modal>
+
+                <ModalUser open={this.state.openModalUsr} close={this.handleCloseModalUsr}/>
+
             </div>
             )
     }
