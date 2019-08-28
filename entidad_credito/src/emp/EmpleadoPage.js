@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import card from './creditCard.png';
-import ModalUser from './ModalUser';
+import card from '../usr/creditCard.png';
+//import ModalUser from './ModalUser';
 import {
   Container,
   Dropdown,
@@ -11,6 +11,8 @@ import {
   Divider,
   Segment,
   Statistic,
+  Input,
+  Button,
 } from 'semantic-ui-react';
 
 class UserPage extends Component {
@@ -64,48 +66,52 @@ class UserPage extends Component {
                 </Menu>
 
                 <Container>
-                    <Segment >
-                        <Header as='h3'>sección uno (Pueden ir estadisticas)</Header>
-                        <Statistic.Group>
-                            <Statistic>
-                                <Statistic.Value>22</Statistic.Value>
-                                <Statistic.Label>MOVIMIENTOS</Statistic.Label>
-                            </Statistic>
+                    <Segment>
+                        <Header as='h3'>Secccion Clientes</Header>
+                        <Input
+                        action={{ color: 'blue', content: 'Buscar' }}
+                        icon='search'
+                        iconPosition='left'
+                        placeholder='DNI cliente'
+                        />
 
-                            <Statistic>
-                                <Statistic.Value text>
-                                    TRES<br />
-                                    MIL
-                                </Statistic.Value>
-                                <Statistic.Label>SUSCRIPCIONES</Statistic.Label>
-                            </Statistic>
-
-                            <Statistic>
-                                <Statistic.Value>
-                                    <Icon name='plane' />
-                                    5
-                                </Statistic.Value>
-                                <Statistic.Label>VUELOS</Statistic.Label>
-                            </Statistic>
-
-                            <Statistic>
-                                <Statistic.Value>
-                                    <Image src='https://react.semantic-ui.com/images/avatar/small/joe.jpg' inline circular />
-                                    42
-                                </Statistic.Value>
-                                <Statistic.Label>....</Statistic.Label>
-                            </Statistic>
-                        </Statistic.Group>
+                        <Button
+                        color='teal'
+                        content='Registrar nuevo cliente'
+                        icon='add user'
+                        labelPosition='left'
+                        />
 
                         <Divider section />
 
-                        <Header as='h3'>sección dos</Header>
-                        <Image src='https://react.semantic-ui.com/images/wireframe/short-paragraph.png' />
+                        <Header as='h3'>Seccion tarjeta de credito</Header>
+                        <Button
+                        color='teal'
+                        content='Cargar establecimiento'
+                        icon='add' 
+                        labelPosition='left'
+                        />
+                        <Button
+                        color='teal'
+                        content='Ver establecimiento'
+                        icon='ordered list'
+                        labelPosition='left'
+                        />
+
+                        <Divider section />
+
+                        <Header as='h3'>Seccion establecimientos</Header>
+                        <Button
+                        color='teal'
+                        content='Ver establecimiento'
+                        icon='ordered list'
+                        labelPosition='left'
+                        />
+
                     </Segment>
                 </Container>
 
-                <ModalUser open={this.state.openModalUsr} close={this.handleCloseModalUsr}/>
-
+                
             </div>
             )
     }

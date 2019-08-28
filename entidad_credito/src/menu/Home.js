@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {Menu, Grid, Button} from 'semantic-ui-react';
+import {Menu, Grid, Container} from 'semantic-ui-react';
 import LogIn from '../logIn/LogIn';
 
 
@@ -12,8 +12,9 @@ class Home extends Component {
         const { activeItem } = this.state;
         
         return (
-            <div class="ui container" >
-                <Grid columns={1} divided>
+            
+            <Container >
+                <Grid columns={1} divided> 
                     <Grid.Row style={{marginBottom: 150}}>{/*Ver porque no puedo crear un objeto con props css*/}
                         <Grid.Column>
                             <Menu>
@@ -46,7 +47,7 @@ class Home extends Component {
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>
-            </div>
+            </Container>
         )
     }
 }

@@ -1,7 +1,7 @@
 import React from 'react';
-import { BrowserRouter as Router, Route } from "react-router-dom";
 import Home from './Home';
-import UserPage from '../usr/UserPage';
+import UserPage from '../cliente/UserPage';
+import AdminPage from '../admin/AdminPage';
 
 class App extends React.Component {//
 /*Verrificar logIn
@@ -23,15 +23,18 @@ class App extends React.Component {//
   render = () => {
     if(this.state.loggedIn){
       return(
-        <UserPage logOut={this.logOut}/>
+        //<EmpleadoPage/>
+
+         //<UserPage logOut={this.logOut}/>
+         <AdminPage logOut={this.logOut}/>
+
+        
+        
       );
     }
     else{
       return (
-        <Router>
-          <Route exact path="/" component={Home} />
-          <Route path="/home" component={Home} />
-        </Router>
+        <Home/>
       );
     }
   }
