@@ -25,8 +25,8 @@ class App extends React.Component {//
       return(
         //<EmpleadoPage/>
 
-         //<UserPage logOut={this.logOut}/>
-         <AdminPage logOut={this.logOut}/>
+         <UserPage logOut={this.logOut}/>
+         //<AdminPage logOut={this.logOut}/>
 
         
         

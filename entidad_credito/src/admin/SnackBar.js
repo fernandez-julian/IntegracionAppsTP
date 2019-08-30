@@ -9,7 +9,7 @@ class Snackbar extends Component {
     return this.props.open ? (
       <Message info={info} error={error} success={success} size='big'>
         <Icon name={success ? "check circle" : error ? "times circle" : info ? "info circle" : null} />
-        <b>{success ? "Registro completado con exito! " : error ? "Oups ocurrio un problema! " : info ? "Heads Up! " : null}</b>
+        <b>{success ? "Registro completado con exito! " : error ? "Uups ocurrio un problema! " : info ? "Heads Up! " : null}</b>
         <span>{children}</span>
         <Icon name="times" style={{ float: 'right', cursor: 'pointer' }} onClick={() => this.setState({ visible: false })} />
       </Message>

@@ -9,6 +9,8 @@ class FromCli extends Component {
     state = {
         openConfirm: false,
         openSnackBar: false,
+
+        
     };
 
   openConfirm = () => this.setState({ openConfirm: true });
@@ -96,7 +98,7 @@ class FromCli extends Component {
                 confirmButton="Confirmar"
                 /> 
 
-                <SnackBar success open={this.state.openSnackBar}/>
+                <SnackBar error open={this.state.openSnackBar}/>
 
             </Container>
         );

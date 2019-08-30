@@ -34,7 +34,11 @@ class NavBarCli extends Component {
                     <Dropdown.Item>List Item</Dropdown.Item>
                 </Dropdown.Menu>
                 </Dropdown>*/}
-                <Menu.Item position='right' as='a' onClick={this.props.LogOut}><Icon name='sign-out'/>Cerrar sesión</Menu.Item>
+                <Menu.Menu position='right'>
+                    <Menu.Item onClick={this.props.openChangePass}><Icon name='settings'/></Menu.Item>
+                    <Menu.Item onClick={this.props.LogOut}><Icon name='sign-out'/>Cerrar sesión</Menu.Item>
+                 </Menu.Menu>
+                
             </Container>
             </Menu>
         );
