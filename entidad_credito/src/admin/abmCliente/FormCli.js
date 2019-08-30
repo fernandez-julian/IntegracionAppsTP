@@ -1,14 +1,28 @@
 import React, { Component } from "react";
-import { Form, Input, TextArea, Button, Select, Container, Header, Icon, Segment, Message } from 'semantic-ui-react'
+import { Form, Input, TextArea, Button, Select, Container, Header, Icon, Segment, Message, Confirm } from 'semantic-ui-react';
+import SnackBar from '../SnackBar';
 
-const genderOptions = [
-  { key: 'h', text: 'Hombre', value: 'Hombre' },
-  { key: 'm', text: 'Mujer', value: 'Mujer' },
-  { key: 'o', text: 'Otro', value: 'Otro' },
-]
+
 
 class FromCli extends Component {
+
+    state = {
+        openConfirm: false,
+        openSnackBar: false,
+    };
+
+  openConfirm = () => this.setState({ openConfirm: true });
+
+  closeConfirm = () => this.setState({ openConfirm: false });
+
+  handleConfirm = () => {
+        this.closeConfirm();
+        this.setState({ openSnackBar: true });
+        //alert(this.state.openSnackBar);
+    };
+
     render(){
+        
         return(
             <Container>
                 <Segment style={{marginTop:'60px'}}>
@@ -24,30 +38,42 @@ class FromCli extends Component {
                             id='form-input-control-first-name'
                             control={Input}
                             label='Nombre'
-                            placeholder='Nombre'
+                            placeholder='Nombre y apellido'
                         />
                         <Form.Field
                             id='form-input-control-last-name'
                             control={Input}
-                            label='Apellido'
-                            placeholder='Apellido'
+                            label='Fecha de nacimiento'
+                            placeholder='DD/MM/AA'
                         />
                         <Form.Field
-                            control={Select}
-                            options={genderOptions}
-                            label={{ children: 'Genero', htmlFor: 'form-select-control-gender' }}
-                            placeholder='Genero'
-                            search
-                            searchInput={{ id: 'form-select-control-gender' }}
+                            id='form-input-control-last-name'
+                            control={Input}
+                            label='DNI'
+                            placeholder='DNI'
                         />
                         </Form.Group>
+                        <Form.Group widths='equal'>
                         <Form.Field
+                            id='form-input-control-last-name'
+                            control={Input}
+                            label='Tel'
+                            placeholder='xxxx'
+                        />
+                        <Form.Field
+                            id='form-input-control-last-name'
+                            control={Input}
+                            label='Email'
+                            placeholder='Email@...'
+                        />
+                        </Form.Group>
+                       {/* <Form.Field
                         id='form-textarea-control-opinion'
                         control={TextArea}
                         label='Opinion'
                         placeholder='Opinion'
                         />
-                    {/* <Form.Field
+                        <Form.Field
                         id='form-button-control-public'
                         control={Button}
                         content='Confirm'
@@ -56,19 +82,25 @@ class FromCli extends Component {
                     <Button.Group>
                         <Button>Cancelar</Button>
                         <Button.Or />
-                        <Button positive>Aceptar</Button>
+                        <Button positive onClick={this.openConfirm}>Aceptar</Button>
                     </Button.Group>
                     </Form>
                 </Segment>
-                <Message
-                success
-                header='Form Completed'
-                content="You're all signed up for the newsletter"
-                size='big'
-                
-                />
+
+                <Confirm
+                open={this.state.openConfirm}
+                onCancel={this.closeConfirm}
+                onConfirm={this.handleConfirm}
+                content='¿Desea confirmar el alta del cliente?'
+                cancelButton='Cancelar'
+                confirmButton="Confirmar"
+                /> 
+
+               
+                <SnackBar success open={this.state.openSnackBar}/>{/*________________________NO SE RENDERIZA____________ */}
+                <Message >kkkkk</Message>
+
             </Container>
-            
         );
     }
 }
