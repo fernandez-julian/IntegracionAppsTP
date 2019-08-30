@@ -2,6 +2,10 @@ import React, { Component } from "react";
 import NavBarAdmin from './NavBarAdmin';
 import FormCli from './abmCliente/FormCli';
 import SearchCli from './abmCliente/SearchCli';
+import SearchEstablecimientos from './abmEstablecimiento/SearchEstablecimientos';
+import SearchTarjeta from './abmTarjeta/SearchTarjeta';
+import FormTarjeta from './abmTarjeta/FormTarjeta';
+import FormEstablecimiento from './abmEstablecimiento/FormEstablecimiento';
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
 class AdminPage extends Component {
@@ -28,6 +32,10 @@ class AdminPage extends Component {
                     <NavBarAdmin OpenModalUsr={this.handleOpenModalUsr} LogOut={this.handleLogOut}/>
                     <Route path="/FormCli" component={FormCli}/>
                     <Route path="/SearchCli" component={SearchCli}/>
+                    <Route path="/SearchTarjeta" component={SearchTarjeta}/>
+                    <Route path="/SearchEstablecimientos" component={SearchEstablecimientos}/>
+                    <Route path="/FormTarjeta" component={FormTarjeta}/>
+                    <Route path="/FormEstablecimiento" component={FormEstablecimiento}/>
                     {/*<Route path="/Inicio" component={InicioCli} />
                     <Route path="/Liquidaciones" component={Liquidaciones} />
         */}

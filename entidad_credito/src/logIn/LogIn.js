@@ -23,9 +23,6 @@ class LogIn extends Component {
         loop: true,
         autoplay: true,
         animationData: animationData,
-        rendererSettings: {
-          preserveAspectRatio: "xMidYMid slice"
-        }
       };
 
     return (
@@ -68,3 +65,4 @@ class LogIn extends Component {
 }
 
 export default LogIn;
+  

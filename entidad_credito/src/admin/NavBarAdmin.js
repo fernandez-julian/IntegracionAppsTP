@@ -23,15 +23,15 @@ class NavBarAdmin extends Component {
 
                 <Dropdown item simple text='Tarjeta credito'>
                     <Dropdown.Menu>
-                        <Dropdown.Item><Link to="/Inicio" style={{ color: 'black' }}>Alta</Link></Dropdown.Item>
-                        <Dropdown.Item><Link to="/Inicio" style={{ color: 'black' }}>Buscar</Link></Dropdown.Item>
+                        <Dropdown.Item><Link to="/FormTarjeta" style={{ color: 'black' }}>Alta</Link></Dropdown.Item>
+                        <Dropdown.Item><Link to="/SearchTarjeta" style={{ color: 'black' }}>Buscar</Link></Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
 
                 <Dropdown item simple text='Establecimientos'>
                     <Dropdown.Menu>
-                        <Dropdown.Item><Link to="/Inicio" style={{ color: 'black' }}>Alta</Link></Dropdown.Item>
-                        <Dropdown.Item><Link to="/Inicio" style={{ color: 'black' }}>Buscar</Link></Dropdown.Item>
+                        <Dropdown.Item><Link to="/FormEstablecimiento" style={{ color: 'black' }}>Alta</Link></Dropdown.Item>
+                        <Dropdown.Item><Link to="/SearchEstablecimientos" style={{ color: 'black' }}>Buscar</Link></Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>
                 

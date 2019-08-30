@@ -17,27 +17,7 @@ class Home extends Component {
                 <Grid columns={1} divided> 
                     <Grid.Row style={{marginBottom: 150}}>{/*Ver porque no puedo crear un objeto con props css*/}
                         <Grid.Column>
-                            <Menu>
-                                <Menu.Item
-                                    name='Inicio'
-                                    active={activeItem === 'Inicio'}
-                                    onClick={this.handleItemClick}
-                                >
-                                    Inicio
-                                </Menu.Item>
-
-                                <Menu.Item name='Otro' active={activeItem === 'Otro'} onClick={this.handleItemClick}>
-                                    Otro
-                                </Menu.Item>
-
-                                <Menu.Item
-                                    name='otro2'
-                                    active={activeItem === 'otro2'}
-                                    onClick={this.handleItemClick}
-                                >
-                                    otro2
-                                </Menu.Item>
-                            </Menu>
+                           
                         </Grid.Column>
                     </Grid.Row>
                    
