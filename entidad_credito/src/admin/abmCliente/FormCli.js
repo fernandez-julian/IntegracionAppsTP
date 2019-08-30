@@ -18,7 +18,7 @@ class FromCli extends Component {
   handleConfirm = () => {
         this.closeConfirm();
         this.setState({ openSnackBar: true });
-        //alert(this.state.openSnackBar);
+        setTimeout(() => this.setState({ openSnackBar: false }), 3000);
     };
 
     render(){
@@ -96,9 +96,7 @@ class FromCli extends Component {
                 confirmButton="Confirmar"
                 /> 
 
-               
-                <SnackBar success open={this.state.openSnackBar}/>{/*________________________NO SE RENDERIZA____________ */}
-                <Message >kkkkk</Message>
+                <SnackBar success open={this.state.openSnackBar}/>
 
             </Container>
         );

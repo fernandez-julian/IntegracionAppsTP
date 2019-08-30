@@ -11,7 +11,7 @@ import {
     Card,
   } from 'semantic-ui-react';
 
-  const panes = [
+  /*const panes = [
     { menuItem: 'Detalles', render: () => <Tab.Pane>
         <p>Nombre:</p>
         <p> Nombre usr:</p>
@@ -22,7 +22,7 @@ import {
         <p>Email:</p>
     </Tab.Pane> },
     { menuItem: 'Tarjetas', render: () => <Tab.Pane >Tab 2 Content</Tab.Pane> },
-  ]
+  ]*/
 
 class ModalUser extends Component {
 
@@ -58,12 +58,18 @@ class ModalUser extends Component {
                                         <Grid.Column>
                                             <Segment>
                                                 <Menu pointing>
-                                                    <Tab panes={panes}/>
+                                                <Tab.Pane>
+                                                    <p>Nombre:</p>
+                                                    <p> Nombre usr:</p>
+                                                    <p>Sexo:</p>
+                                                    <p>Fecha nacimiento:</p>
+                                                    <p>DNI:</p>
+                                                    <p> Tel:</p>
+                                                    <p>Email:</p>
+                                                </Tab.Pane>
                                                 </Menu>
                                             </Segment>
-                                            <Segment>
-
-                                            </Segment>
+                                           
                                         </Grid.Column>
                                     </Modal.Description>
                                 </Grid.Row>
