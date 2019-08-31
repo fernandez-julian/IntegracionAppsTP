@@ -42,7 +42,7 @@ const Connection = require('tedious').Connection;
   var TYPES = require('tedious').TYPES;  
   
     function executeGetUsuarios() {  
-        request = new Request("SELECT * FROM Usuarios", function(err) {  
+        request = new Request("SELECT * FROM Usuarios FOR JSON PATH", function(err) {  
         if (err) {  
             console.log(err);}  
         });  
@@ -85,7 +85,7 @@ const Connection = require('tedious').Connection;
   }  
 
   function executeGetTarjetas() {  
-    request = new Request("SELECT * FROM Tarjetas", function(err) {  
+    request = new Request("SELECT * FROM Tarjetas FOR JSON PATH", function(err) {  
     if (err) {  
         console.log(err);}  
     });  
@@ -118,7 +118,7 @@ const Connection = require('tedious').Connection;
 } 
 
 function executeGetEntidades() {  
-  request = new Request("SELECT * FROM Entidades", function(err) {  
+  request = new Request("SELECT * FROM Entidades FOR JSON PATH", function(err) {  
   if (err) {  
       console.log(err);}  
   });  
@@ -150,7 +150,7 @@ function executeSetEntidad() {
 } 
 
 function executeGetResumenes() {  
-  request = new Request("SELECT * FROM Resumenes", function(err) {  
+  request = new Request("SELECT * FROM Resumenes FOR JSON PATH", function(err) {  
   if (err) {  
       console.log(err);}  
   });  
@@ -182,7 +182,7 @@ function executeSetResumen() {
 } 
 
 function executeGetMovimientos() {  
-  request = new Request("SELECT * FROM Movimientos", function(err) {  
+  request = new Request("SELECT * FROM Movimientos FOR JSON PATH", function(err) {  
   if (err) {  
       console.log(err);}  
   });  
