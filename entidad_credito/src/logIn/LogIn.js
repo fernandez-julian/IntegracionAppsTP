@@ -17,6 +17,44 @@ const Style = {
 }
 
 class LogIn extends Component {
+  constructor(){
+    super();
+    this.state = {
+      email: '',
+      password: '',
+      successText: '',
+    }
+  }
+
+  handleChange = (e, { name, value }) => this.setState({ [name]: value });
+
+  handleSubmit = () => {
+    let requestBody = {};
+    requestBody.email = this.state.email;
+    requestBody.password = this.state.password;
+    fetch('/log', {
+      method: "POST",
+      mode: 'cors',
+      body: JSON.stringify(requestBody),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+        }),
+        }).then(response => { return response.json() })
+        .then(response => {
+        var a = JSON.parse(response)//------------------------problemas con Json, no puedo rescatar el valor de campo'tipo'
+          console.log();
+          
+          
+        if(response.tipo==='admin'){
+          this.props.isAdmin();
+          this.props.logIn();
+        }
+        if(response.tipo==='cliente'){
+          this.props.isCli();
+          this.props.logIn();
+        }
+    });
+  };
 
   render() {
     const defaultOptions = {
@@ -37,13 +75,15 @@ class LogIn extends Component {
             />
               Ingrese a su cuenta
             </Header>
-            <Form size="large">
+            <Form size="large" onSubmit={this.handleSubmit}>
               <Segment stacked>
                 <Form.Input
                   fluid
                   icon="user"
                   iconPosition="left"
                   placeholder="Dirección de E-mail"
+                  name='email'
+                  onChange={this.handleChange}
                 />
                 <Form.Input
                   fluid
@@ -51,6 +91,8 @@ class LogIn extends Component {
                   iconPosition="left"
                   placeholder="Contraseña"
                   type="password"
+                  name='password'
+                  onChange={this.handleChange}
                 />
                 <Button color="olive" fluid size="large">
                   Log in

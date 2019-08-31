@@ -1,5 +1,8 @@
 const Connection = require('tedious').Connection;
 //const Request = require('tedious').Request;
+var express = require('express');
+var app = express();
+const router = express.Router();
 
   var config = {  
     //server: '192.168.0.13',
@@ -19,28 +22,70 @@ const Connection = require('tedious').Connection;
   }; 
 
   const connection = new Connection(config);
-
   connection.on('connect', function(err) {
-    if (err) {
+      if (err) {
       console.log(err);
-    } else {
-      console.log('Connected to SQL');
-      executeGetUsuarios();
-     // executeGetTarjetas();
-     // executeGetEntidades();
-     // executeGetResumenes();
-     // executeGetMovimientos();
-      
-     // executeSetUsuario();
-     // executeSetTarjeta();
-     // executeSetEntidad();
-     // executeSetResumen();
-     // executeSetMovimiento()
+        } else {
+         console.log('Connected to SQL');
+        }
     }
-  });
+);
+
+app.set('port', process.env.PORT || 8080);//defino valor del puerto
+
+//Middlewares
+app.use(express.json());//para enviar y recibir json
+
+//Inicializar el srv
+app.listen(app.get('port'), () => {
+    console.log(`Server on port ${app.get('port')}`);
+});
 
   var Request = require('tedious').Request;  
   var TYPES = require('tedious').TYPES;  
+
+app.use(
+    router.post('/log', (req, res) => {
+        const { email, password } = req.body;
+        request = new Request('SELECT * FROM Usuarios where mail = \'' + email + '\' and passDefault = ' + password +' FOR JSON PATH', function(err) {  
+            if (err) {  
+                console.log(err);}  
+            });  
+            var result = "";  
+            console.log('1')
+            request.on('row', function(columns) {  
+                columns.forEach(function(column) {  
+                  if (column.value === null) {  
+                    //console.log('NULL');  
+                  } else {  
+                    result+= column.value + " ";  
+                  }  
+                });
+                console.log('2')
+                console.log(result);
+                res.json(result);
+                result ="";  
+                console.log('3')
+                console.log(result); 
+                //res.writeHead(200, {'Content-Type': 'application/json'});
+                //res.end(JSON.stringify(result))
+                //console.log(res.end(JSON.stringify(result)))
+                //res.json(result);
+            });  
+            console.log('4')
+            connection.execSql(request); 
+            console.log('5')
+            //res.json(result); 
+            
+            
+                
+    })
+    
+    
+    
+    
+    
+    );
   
     function executeGetUsuarios() {  
         request = new Request("SELECT * FROM Usuarios FOR JSON PATH", function(err) {  

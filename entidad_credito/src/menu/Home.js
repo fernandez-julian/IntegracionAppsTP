@@ -23,7 +23,7 @@ class Home extends Component {
                    
                     <Grid.Row>
                         <Grid.Column> 
-                            <LogIn/>
+                            <LogIn isAdmin={this.props.isAdmin} isCli={this.props.isCli} logIn={this.props.logIn}/>
                         </Grid.Column>
                     </Grid.Row>
                 </Grid>

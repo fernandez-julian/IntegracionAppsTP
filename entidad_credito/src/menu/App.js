@@ -9,7 +9,9 @@ class App extends React.Component {//
 /*Si cumple -> mostrar correspondiente pagina
 */
   state = {
-    loggedIn: true,//momentaneamente cambiar entre true y false para ver la pagina del usr
+    loggedIn: false,//momentaneamente cambiar entre true y false para ver la pagina del usr
+    admin: false,
+    cli: false
   };
 
   logIn = () => {
@@ -20,21 +22,28 @@ class App extends React.Component {//
     this.setState({ loggedIn: false });
   }
 
+  isAdmin = () =>{
+    this.setState({ admin: true });
+    this.setState({ cli: false });
+  }
+
+  isCli = () =>{
+    this.setState({ cli: true });
+    this.setState({ admin: false });
+  }
+
   render = () => {
     if(this.state.loggedIn){
-      return(
-        //<EmpleadoPage/>
-
-         <UserPage logOut={this.logOut}/>
-         //<AdminPage logOut={this.logOut}/>
-
-        
-        
-      );
+      if(this.state.cli){
+        return(<UserPage logOut={this.logOut}/>);
+      }
+      else{
+        return(<AdminPage logOut={this.logOut}/>);
+      }
     }
     else{
       return (
-        <Home/>
+        <Home isAdmin={this.isAdmin} isCli={this.isCli} logIn={this.logIn}/>
       );
     }
   }
