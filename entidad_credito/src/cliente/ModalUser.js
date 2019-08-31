@@ -60,9 +60,8 @@ class ModalUser extends Component {
                                                 <Menu pointing>
                                                 <Tab.Pane>
                                                     <p>Nombre:</p>
-                                                    <p> Nombre usr:</p>
-                                                    <p>Sexo:</p>
-                                                    <p>Fecha nacimiento:</p>
+                                                    <p> Nombre Usuario:</p>
+                                                    <p>Fecha Nacimiento:</p>
                                                     <p>DNI:</p>
                                                     <p> Tel:</p>
                                                     <p>Email:</p>

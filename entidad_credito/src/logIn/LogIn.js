@@ -84,12 +84,13 @@ class LogIn extends Component {
                   placeholder="Dirección de E-mail"
                   name='email'
                   onChange={this.handleChange}
+                  placeholder="Dirección de E-mail" required
                 />
                 <Form.Input
                   fluid
                   icon="lock"
                   iconPosition="left"
-                  placeholder="Contraseña"
+                  placeholder="Contraseña" required
                   type="password"
                   name='password'
                   onChange={this.handleChange}
