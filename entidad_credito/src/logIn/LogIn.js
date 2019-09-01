@@ -41,18 +41,12 @@ class LogIn extends Component {
         }),
         }).then(response => { return response.json() })
         .then(response => {
-        var a = JSON.parse(response)//------------------------problemas con Json, no puedo rescatar el valor de campo'tipo'
-          console.log();
+          if(response.status === 404){ //------------------------problemas cuando no se ingresa bien
+            console.log('')
+          }
           
-          
-        if(response.tipo==='admin'){
-          this.props.isAdmin();
-          this.props.logIn();
-        }
-        if(response.tipo==='cliente'){
-          this.props.isCli();
-          this.props.logIn();
-        }
+        var usr = JSON.parse(response)
+        this.props.setUsr(usr);
     });
   };
 

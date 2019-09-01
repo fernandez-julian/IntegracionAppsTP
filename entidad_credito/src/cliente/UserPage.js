@@ -5,11 +5,13 @@ import InicioCli from './InicioCli';
 import Liquidaciones from './Liquidaciones';
 import { BrowserRouter as Router, Route } from "react-router-dom";
 import ChangePass from "./ChangePass";
+import Greeting from '../components/Greeting';
 
 class UserPage extends Component {
     state = {
         openModalUsr: false,
-        openChangePass: true,
+        openChangePass: false,
+        cliName: this.props.name,
     };
 
     handleOpenModalUsr = () =>{
@@ -36,14 +38,18 @@ class UserPage extends Component {
         return (
             <div>
                 <Router>
-                    <NavBarCli OpenModalUsr={this.handleOpenModalUsr} LogOut={this.handleLogOut} openChangePass={this.handleOpenModalChangePass}/>
+                    <NavBarCli OpenModalUsr={this.handleOpenModalUsr} LogOut={this.handleLogOut}
+                    openChangePass={this.handleOpenModalChangePass}/>
+                    <Greeting name={this.state.cliName}/>
+
                     <Route path="/Inicio" component={InicioCli} />
                     <Route path="/Liquidaciones" component={Liquidaciones} />
+
+                    <ModalUser open={this.state.openModalUsr} close={this.handleCloseModalUsr}/>
+                    <ChangePass open={this.state.openChangePass} close={this.handleCloseModalChangePass}/>
                 </Router>
 
 
-                <ModalUser open={this.state.openModalUsr} close={this.handleCloseModalUsr}/>
-                <ChangePass open={this.state.openChangePass} close={this.handleCloseModalChangePass}/>
 
             </div>
             )

@@ -5,7 +5,7 @@ class ChangePass extends Component {
     render(){
         return(
             <Container>
-                    <Modal open={this.props.open} onClose={this.props.close} basic size='small'>
+                    <Modal open={this.props.open} onClose={this.props.close} basic size='small' dimmer='blurring'>
                         <Header icon='archive' content='Cambiar contraseña' />
                         <Modal.Content>
                         <Form>

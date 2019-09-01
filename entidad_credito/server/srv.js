@@ -49,13 +49,14 @@ app.use(
         const { email, password } = req.body;
         request = new Request('SELECT * FROM Usuarios where mail = \'' + email + '\' and passDefault = ' + password +' FOR JSON PATH', function(err) {  
             if (err) {  
-                console.log(err);}  
+                console.log(err); 
+              }
             });  
             var result = "";  
             console.log('1')
-            request.on('row', function(columns) {  
+            request.on('row', function(columns) { 
                 columns.forEach(function(column) {  
-                  if (column.value === null) {  
+                  if (column.value === null) {
                     //console.log('NULL');  
                   } else {  
                     result+= column.value + " ";  
@@ -67,13 +68,16 @@ app.use(
                 result ="";  
                 console.log('3')
                 console.log(result); 
+
+                //res.status(400).json('Usuario o clave icorrecto')
+
                 //res.writeHead(200, {'Content-Type': 'application/json'});
                 //res.end(JSON.stringify(result))
                 //console.log(res.end(JSON.stringify(result)))
                 //res.json(result);
             });  
             console.log('4')
-            connection.execSql(request); 
+            connection.execSql(request);
             console.log('5')
             //res.json(result); 
             

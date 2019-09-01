@@ -9,41 +9,42 @@ class App extends React.Component {//
 /*Si cumple -> mostrar correspondiente pagina
 */
   state = {
-    loggedIn: false,//momentaneamente cambiar entre true y false para ver la pagina del usr
+    usr: [],
+    loggedIn: false,
     admin: false,
     cli: false
   };
 
-  logIn = () => {
-    this.setState({ loggedIn: true });
+  setUsr = (usr) => {
+    this.setState({usr});
+
+    if(usr.length)
+      this.setState({ loggedIn: true });
+
+    if(usr[0]['tipo']==='admin')
+      this.setState({ admin: true });
+
+    if(usr[0]['tipo']==='cliente')
+      this.setState({ cli: true });
+      
   }
 
   logOut = () =>{
     this.setState({ loggedIn: false });
   }
 
-  isAdmin = () =>{
-    this.setState({ admin: true });
-    this.setState({ cli: false });
-  }
-
-  isCli = () =>{
-    this.setState({ cli: true });
-    this.setState({ admin: false });
-  }
-
   render = () => {
     if(this.state.loggedIn){
       if(this.state.cli){
-        return(<UserPage logOut={this.logOut}/>);
+        return(<UserPage name={this.state.usr[0]['nombre']} logOut={this.logOut}/>);
       }
       else{
-        return(<AdminPage logOut={this.logOut}/>);
+        return(<AdminPage name={this.state.usr[0]['nombre']} logOut={this.logOut}/>);
       }
     }
     else{
       return (
-        <Home isAdmin={this.isAdmin} isCli={this.isCli} logIn={this.logIn}/>
+        <Home setUsr={this.setUsr}/>
       );
     }
   }

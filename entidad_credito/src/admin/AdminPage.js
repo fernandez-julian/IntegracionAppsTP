@@ -6,11 +6,13 @@ import SearchEstablecimientos from './abmEstablecimiento/SearchEstablecimientos'
 import SearchTarjeta from './abmTarjeta/SearchTarjeta';
 import FormTarjeta from './abmTarjeta/FormTarjeta';
 import FormEstablecimiento from './abmEstablecimiento/FormEstablecimiento';
+import Greeting from '../components/Greeting';
 import { BrowserRouter as Router, Route } from "react-router-dom";
 
 class AdminPage extends Component {
     state = {
-        openModalUsr: false
+        openModalUsr: false,
+        adminName: this.props.name,
     };
 
     handleOpenModalUsr = () =>{
@@ -24,12 +26,14 @@ class AdminPage extends Component {
     handleLogOut = () =>{
         this.props.logOut();
     };
+;
 
     render() {
         return (
             <div>
                 <Router>
                     <NavBarAdmin OpenModalUsr={this.handleOpenModalUsr} LogOut={this.handleLogOut}/>
+                    <Greeting name={this.state.adminName}/>
                     <Route path="/FormCli" component={FormCli}/>
                     <Route path="/SearchCli" component={SearchCli}/>
                     <Route path="/SearchTarjeta" component={SearchTarjeta}/>
