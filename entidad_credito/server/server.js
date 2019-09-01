@@ -3,7 +3,7 @@ const Connection = require('tedious').Connection;
 
   var config = {  
     //server: '192.168.0.13',
-    server: 'localhost',
+    server: '192.168.0.13',
     authentication: {
         type: 'default',
         options: {
@@ -25,11 +25,15 @@ const Connection = require('tedious').Connection;
       console.log(err);
     } else {
       console.log('Connected to SQL');
-      executeGetUsuarios();
-     // executeGetTarjetas();
-     // executeGetEntidades();
-     // executeGetResumenes();
-     // executeGetMovimientos();
+     // executeGetAllUsuarios();
+     // executeGetAllTarjetas();
+     // executeGetAllEntidades();
+     // executeGetAlResumenes();
+     // executeGetAllMovimientos();
+
+     // executeSearchUsr('maria@hotmail.com');
+     // executeSearchTarjeta(1000);
+     // executeSearchEntidad('x');
       
      // executeSetUsuario('admin', 'juan', 'juan@hotmail.com', 'abc', '1874/12/07', 123456, 123456, 'juan@hotmail.com');
      // executeSetTarjeta(10000, '2021/08/01', 875, 25487653);
@@ -39,6 +43,8 @@ const Connection = require('tedious').Connection;
 
      // executeChangePass('aaa', 'maria@hotmail.com');
      // executeLogIn('maria@hotmail.com', 'aaa');
+     // executeGetLiquidaciones(25487653, '2019-07-30', '2019-08-30');
+     // executeUpdateLimite(25487653, 10000);
     }
   });
 
@@ -314,3 +320,39 @@ function executeLogIn(userName, password) {
   }); 
   connection.execSql(request);
   } 
+
+  function executeGetLiquidaciones(dni, date1, date2) {  
+    request = new Request("SELECT m.fecha, m.monto, m.idEntidad, m.nroTarjeta FROM Movimientos m join Tarjetas t ON m.nroTarjeta = t.nroTarjeta WHERE t.dni = @dni AND (m.fecha BETWEEN @date1 AND @date2) FOR JSON PATH", function(err) {  
+     if (err) {  
+        console.log(err);}  
+    });  
+    request.addParameter('dni', TYPES.Int , dni);
+    request.addParameter('date1', TYPES.Date, date1);  
+    request.addParameter('date2', TYPES.Date, date2);  
+    var result = "";
+    request.on('row', function(columns) {  
+        columns.forEach(function(column) {  
+          if (column.value === '') {  
+            console.log('NULL');  
+          } else {  
+            result+= column.value + " ";  
+          }  
+        });  
+        console.log(result);  
+        result ="";  
+    }); 
+    connection.execSql(request);
+    }
+
+    function executeUpdateLimite(dni, limite) {  
+      request = new Request("UPDATE Tarjetas SET limite = @limite WHERE dni = @dni", function(err) {  
+       if (err) {  
+          console.log(err);}  
+      });  
+      request.addParameter('limite', TYPES.Float, limite);  
+      request.addParameter('dni', TYPES.Int , dni);
+    
+      connection.execSql(request);
+      }
+
+    
