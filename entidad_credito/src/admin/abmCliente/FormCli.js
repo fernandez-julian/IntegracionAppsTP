@@ -36,7 +36,7 @@ class FromCli extends Component {
         this.setState({
             [name]: value
         });
-    }
+    };
 
     createCli = event => {
         this.closeConfirm();
