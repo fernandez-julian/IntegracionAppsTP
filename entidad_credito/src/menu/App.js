@@ -17,6 +17,7 @@ class App extends React.Component {//
 
   setUsr = (usr) => {
     this.setState({usr});
+    console.log(this.state.usr)
 
     if(usr.length)
       this.setState({ loggedIn: true });

@@ -22,7 +22,7 @@ class LogIn extends Component {
     this.state = {
       email: '',
       password: '',
-      successText: '',
+      success: '',
     }
   }
 
@@ -39,15 +39,23 @@ class LogIn extends Component {
       headers: new Headers({
         'Content-Type': 'application/json'
         }),
-        }).then(response => { return response.json() })
-        .then(response => {
-          if(response.status === 404){ //------------------------problemas cuando no se ingresa bien
-            console.log('')
+        }).then(response => {
+          if(response.status === 404){
+            this.state.success = '404';
+            return response.json(); 
           }
-          
-        var usr = JSON.parse(response)
-        this.props.setUsr(usr);
-    });
+          else{
+            this.state.success = '200';
+            return response.json();
+          }
+        }).then(response => {
+          if(this.state.success === '200'){
+            var usr = JSON.parse(response);
+            this.props.setUsr(usr);
+        }
+        else{
+          this.props.open();
+        }});
   };
 
   render() {
