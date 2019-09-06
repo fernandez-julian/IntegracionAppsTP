@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: 'localhost',
+  server: '192.168.0.13',
   authentication: {
     type: 'default',
     options: {
@@ -73,16 +73,13 @@ app.use(
       }
     });
     connection.execSql(request);
-
-
   }),
 
   router.post('/clientes/registrar', (req, res) => {
     const { nombre, fechaNac, dni, telefono, mail } = req.body;
     const passDefault = defaulPass();
     const tipo = 'cliente';
-    console.log(nombre, dni, passDefault);
-    request = new Request("INSERT INTO Usuarios (tipo, nombre, passDefault, fechaNac, dni, telefono, mail) values (@tipo, @nombre, @passDefault, @fechaNac, @dni, @telefono, @mail)", function (err) {
+    request = new Request("INSERT INTO Usuarios (tipo, nombre, passDefault, passPropia, fechaNac, dni, telefono, mail) values (@tipo, @nombre, @passDefault, @passPropia, @fechaNac, @dni, @telefono, @mail)", function (err) {
       if (err) {
         console.log(err);
       }
@@ -90,17 +87,29 @@ app.use(
     request.addParameter('tipo', TYPES.NVarChar, tipo);
     request.addParameter('nombre', TYPES.NVarChar, nombre);
     request.addParameter('passDefault', TYPES.NVarChar, passDefault);
+    request.addParameter('passPropia', TYPES.NVarChar, passDefault);
     request.addParameter('fechaNac', TYPES.Date, fechaNac);
     request.addParameter('dni', TYPES.Int, dni);
     request.addParameter('telefono', TYPES.Int, telefono);
     request.addParameter('mail', TYPES.NVarChar, mail);
-    console.log(request)
     connection.execSql(request);
     // res.writeHead(200, {'Content-Type': 'application/json'});
     res.json({ clave: passDefault });
+  }),
+
+  router.post('/entidades/registrar', (req, res) => {
+    const { razonSocial, direccion, telefono } = req.body;
+    request = new Request("INSERT INTO Entidades (razonSocial, direccion, telefono) values (@razonSocial, @direccion, @telefono)", function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    request.addParameter('razonSocial', TYPES.NVarChar, razonSocial);
+    request.addParameter('direccion', TYPES.NVarChar, direccion);
+    request.addParameter('telefono', TYPES.NVarChar, telefono);
+
+    connection.execSql(request);
   })
-
-
 
 
 );

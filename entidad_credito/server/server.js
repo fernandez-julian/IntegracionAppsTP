@@ -4,7 +4,7 @@ let tedious = require('tedious');
 
 var config = {
   //server: '192.168.0.13',
-  server: '10.100.44.211',
+  server: '192.168.0.13',
   authentication: {
     type: 'default',
     options: {
@@ -26,20 +26,24 @@ connection.on('connect', function (err) {
     console.log(err);
   } else {
     console.log('Connected to SQL');
-     executeGetAllUsuarios();
+    // executeGetAllUsuarios();
     // executeGetAllTarjetas();
     // executeGetAllEntidades();
     // executeGetAllResumenes();
     // executeGetAllMovimientos();
+   
+    // executeGetTotalResumen(10, 8, 2019);
 
-    // executeSearchUsr('maria@hotmail.com');
-    // executeSearchTarjeta(1000);
+    // executeSearchUsrByMail('maria@hotmail.com');
+    // executeSearchUsrByDni(10);
+    // executeSearchTarjetaByNro(1000);.
+    // executeSearchTarjetaByUsr(10);
     // executeSearchEntidad('x');
 
     // executeSetUsuario('admin', 'juan', 'juan@hotmail.com', 'abc', '1874/12/07', 123456, 123456, 'juan@hotmail.com');
     // executeSetTarjeta(10000, '2021/08/01', 875, 25487653);
     // executeSetEntidad('x', 'CABA', '43742265');
-    // executeSetResumen(7, 2019, 1000);
+    // executeSetResumen(8, 2019, 1002, 10); //CORREGIR
     // executeSetMovimiento('2019/02/15', 2650, 1, 1000)
 
     // executeChangePass('aaa', 'maria@hotmail.com');
@@ -53,7 +57,7 @@ var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
 
 function executeGetAllUsuarios() {
-  const statement = "SELECT * FROM Usuarios FOR JSON PATH"
+  const statement = "SELECT * FROM Usuarios WHERE tipo = 'cliente' FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
@@ -90,14 +94,34 @@ function executeSetUsuario(tipo, nombre, nomUsr, passDefault, fechaNac, dni, tel
   connection.execSql(request);
 }
 
-function executeSearchUsr(userName) {
-  const statement = "SELECT * FROM Usuarios WHERE nomUsr = @nomUsr FOR JSON PATH"
+function executeSearchUsrByMail(mail) {
+  const statement = "SELECT * FROM Usuarios WHERE tipo = 'cliente' AND mail = @mail FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
   let results = '';
   let request = new tedious.Request(statement, handleResult);
-  request.addParameter('nomUsr', TYPES.NVarChar, userName);
+  request.addParameter('mail', TYPES.NVarChar, mail);
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+    if (results == '') console.log('null');
+    else console.log(results);
+  });
+  connection.execSql(request);
+}
+
+function executeSearchUsrByDni(dni) {
+  const statement = "SELECT * FROM Usuarios WHERE tipo = 'cliente' AND dni = @dni FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.addParameter('dni', TYPES.Int, dni);
   request.on('row', function (columns) {
     columns.forEach(function (column) {
       results += column.value + " ";
@@ -129,7 +153,7 @@ function executeGetAllTarjetas() {
   connection.execSql(request);
 }
 
-function executeSearchTarjeta(numero) {
+function executeSearchTarjetaByNro(numero) {
   const statement = "SELECT * FROM Tarjetas WHERE nroTarjeta = @nroTarjeta FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
@@ -149,12 +173,33 @@ function executeSearchTarjeta(numero) {
   connection.execSql(request);
 }
 
-function executeSetTarjeta(limite, fechaVto, codSeg, dni) {
-  request = new Request("INSERT INTO Tarjetas (limite, fechaVto, codSeg, dni) values (@limite, @fechaVto, @codSeg, @dni)", function (err) {
+function executeSearchTarjetaByUsr(dni) {
+  const statement = "SELECT * FROM Tarjetas WHERE dni = @dni FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.addParameter('dni', TYPES.Int, dni);
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+    if (results == '') console.log('null');
+    else console.log(results);
+  });
+  connection.execSql(request);
+}
+
+function executeSetTarjeta(nroTarjeta, limite, fechaVto, codSeg, dni) {
+  request = new Request("INSERT INTO Tarjetas (nroTarjeta, limite, fechaVto, codSeg, dni) values (@nroTarjeta, @limite, @fechaVto, @codSeg, @dni)", function (err) {
     if (err) {
       console.log(err);
     }
   });
+  request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
   request.addParameter('limite', TYPES.Float, limite);
   request.addParameter('fechaVto', TYPES.Date, fechaVto);
   request.addParameter('codSeg', TYPES.Int, codSeg);
@@ -234,15 +279,20 @@ function executeGetAllResumenes() {
   connection.execSql(request);
 }
 
-function executeSetResumen(mes, anio, nroTarjeta) {
-  request = new Request("INSERT INTO Resumenes (mes, anio, nroTarjeta) values (@mes, @anio, @nroTarjeta)", function (err) {
+function executeSetResumen(mes, anio, nroTarjeta, dni) { //Necesita que executeGetTotalResumen le devuelva el total
+  request = new Request("INSERT INTO Resumenes (mes, anio, nroTarjeta, total) values (@mes, @anio, @nroTarjeta, @total)", function (err) {
     if (err) {
       console.log(err);
     }
   });
+  var res;
+  request.on('requestCompleted', function () { //Para que una query se pueda ejecutar dentro de otra
+    res = executeGetTotalResumen(dni, mes, anio) //NO FUNCIONA --> COMO HAGO PARA DEVOLVERLE EL TOTAL
+  });
   request.addParameter('mes', TYPES.Int, mes);
   request.addParameter('anio', TYPES.Int, anio);
   request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
+  request.addParameter('total', TYPES.Float, res);
 
   connection.execSql(request);
 }
@@ -313,24 +363,26 @@ function executeLogIn(userName, password) {
   connection.execSql(request);
 }
 
-function executeGetLiquidaciones(dni, date1, date2) {
-  const statement = "SELECT m.fecha, m.monto, m.idEntidad, m.nroTarjeta FROM Movimientos m join Tarjetas t ON m.nroTarjeta = t.nroTarjeta WHERE t.dni = @dni AND (m.fecha BETWEEN @date1 AND @date2) FOR JSON PATH"
+function executeGetTotalResumen(dni, mes, anio) {
+  const statement = "SELECT SUM(m.monto) AS total FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta WHERE t.dni = @dni AND MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
   let results = '';
   let request = new tedious.Request(statement, handleResult);
   request.addParameter('dni', TYPES.Int, dni);
-  request.addParameter('date1', TYPES.Date, date1);
-  request.addParameter('date2', TYPES.Date, date2);
+  request.addParameter('mes', TYPES.Int, mes);
+  request.addParameter('anio', TYPES.Int, anio);
   request.on('row', function (columns) {
     columns.forEach(function (column) {
       results += column.value + " ";
     });
   });
   request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-    if (results == '') console.log('null');
-    else console.log(results);
+    if (results == '') return null;
+    else{ 
+      return (JSON.parse(results)[0]['total']);
+    }
   });
   connection.execSql(request);
 }
