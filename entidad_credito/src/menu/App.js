@@ -31,6 +31,8 @@ class App extends React.Component {//
 
   logOut = () =>{
     this.setState({ loggedIn: false });
+    this.setState({ admin: false });
+    this.setState({ cli: false });
   }
 
   render = () => {

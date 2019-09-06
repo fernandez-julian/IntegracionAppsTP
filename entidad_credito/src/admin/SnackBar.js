@@ -11,7 +11,7 @@ class Snackbar extends Component {
         <Icon name={success ? "check circle" : error ? "times circle" : info ? "info circle" : null} />
         <b>{success ? "Registro completado con exito! " : error ? "Uups ocurrio un problema! " : info ? "Heads Up! " : null}</b>
         <span>{children}</span>
-        <Icon name="times" style={{ float: 'right', cursor: 'pointer' }} onClick={() => this.setState({ visible: false })} />
+        <Icon name="times" style={{ float: 'right', cursor: 'pointer' }} onClick={() => this.props.close()} />
       </Message>
     ) : null;
   }

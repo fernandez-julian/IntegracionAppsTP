@@ -5,22 +5,59 @@ import SnackBar from '../SnackBar';
 
 
 class FromCli extends Component {
-
+    
     state = {
         openConfirm: false,
         openSnackBar: false,
 
-        
+        nombre: '',
+        fechaNac: '',
+        dni: '',
+        telefono: '',
+        mail: '',
+        clave: '',
     };
 
-  openConfirm = () => this.setState({ openConfirm: true });
+    resetForm = () => {
+        document.getElementById("form").reset();
+        this.setState({nombre:'', fechaNac:'', dni:'', telefono:'', mail:''});
+    };
 
-  closeConfirm = () => this.setState({ openConfirm: false });
+    openConfirm = () => this.setState({ openConfirm: true });
 
-  handleConfirm = () => {
+    closeConfirm = () => this.setState({ openConfirm: false });
+
+    closeSnackBar = () => this.setState({openSnackBar: false});
+
+    onSubmit = () => this.openConfirm();
+
+    handleInputs = (e) => {
+        const {value, name} = e.target;
+        this.setState({
+            [name]: value
+          });
+        console.log(this.state);
+    }
+
+    createCli = event => {
         this.closeConfirm();
-        this.setState({ openSnackBar: true });
-        setTimeout(() => this.setState({ openSnackBar: false }), 3000);
+        let requestBody = {};
+        requestBody.nombre = this.state.nombre;
+        requestBody.fechaNac = this.state.fechaNac;
+        requestBody.dni = this.state.dni;
+        requestBody.telefono = this.state.telefono;
+        requestBody.mail = this.state.mail;
+        fetch('/clientes/registrar', {
+            
+          method: "POST",
+          body: JSON.stringify(requestBody),
+          headers: new Headers({
+              'Content-Type': 'application/json'
+          }),
+      }).then(response => { return response.json() })
+      .then(response => {
+        this.setState({clave: response.clave});
+      }).then(this.setState({ openSnackBar: true }));
     };
 
     render(){
@@ -34,39 +71,39 @@ class FromCli extends Component {
                     </Header>
                 </Segment>
                 <Segment>
-                    <Form>
+                    <Form id='form' onSubmit={this.handleSubmit}>
                         <Form.Group widths='equal'>
-                        <Form.Field
-                            id='form-input-control-first-name'
-                            control={Input}
+                        <Form.Input
                             label='Nombre'
+                            name='nombre'
                             placeholder='Nombre y apellido'
+                            onChange={this.handleInputs}
                         />
-                        <Form.Field
-                            id='form-input-control-last-name'
-                            control={Input}
+                        <Form.Input
                             label='Fecha de nacimiento'
+                            name='fechaNac'
                             placeholder='DD/MM/AA'
+                            onChange={this.handleInputs}
                         />
-                        <Form.Field
-                            id='form-input-control-last-name'
-                            control={Input}
+                        <Form.Input
                             label='DNI'
+                            name='dni'
                             placeholder='DNI'
+                            onChange={this.handleInputs}
                         />
                         </Form.Group>
                         <Form.Group widths='equal'>
-                        <Form.Field
-                            id='form-input-control-last-name'
-                            control={Input}
+                        <Form.Input
                             label='Tel'
+                            name='telefono'
                             placeholder='xxxx'
+                            onChange={this.handleInputs}
                         />
-                        <Form.Field
-                            id='form-input-control-last-name'
-                            control={Input}
+                        <Form.Input
                             label='Email'
+                            name='mail'
                             placeholder='Email@...'
+                            onChange={this.handleInputs}
                         />
                         </Form.Group>
                        {/* <Form.Field
@@ -82,9 +119,9 @@ class FromCli extends Component {
                         label='Label with htmlFor'
                     />*/}
                     <Button.Group>
-                        <Button>Cancelar</Button>
+                        <Button onClick={this.resetForm}>Cancelar</Button>
                         <Button.Or />
-                        <Button positive onClick={this.openConfirm}>Aceptar</Button>
+                        <Button positive onClick={this.onSubmit}>Aceptar</Button>
                     </Button.Group>
                     </Form>
                 </Segment>
@@ -92,17 +129,19 @@ class FromCli extends Component {
                 <Confirm
                 open={this.state.openConfirm}
                 onCancel={this.closeConfirm}
-                onConfirm={this.handleConfirm}
+                onConfirm={this.createCli}
                 content='¿Desea confirmar el alta del cliente?'
                 cancelButton='Cancelar'
                 confirmButton="Confirmar"
                 /> 
 
-                <SnackBar error open={this.state.openSnackBar}/>
+                <SnackBar success open={this.state.openSnackBar} close={this.closeSnackBar}>
+                    La clave del cliente es {this.state.clave}
+                </SnackBar>
 
             </Container>
         );
-    }
-}
+    };
+};
 
 export default FromCli
