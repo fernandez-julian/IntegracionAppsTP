@@ -54,7 +54,7 @@ class LogIn extends Component {
             this.props.setUsr(usr);
         }
         else{
-          this.props.open();
+          this.props.openSnackBar(response);
         }});
   };
 

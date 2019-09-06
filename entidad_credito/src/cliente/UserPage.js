@@ -11,10 +11,13 @@ class UserPage extends Component {
     state = {
         openModalUsr: false,
         openChangePass: false,
-        cliName: this.props.name,
+        //cliName: this.props.name,
+
+        cli: this.props.cli,
+        //cliName: this.state.cli[0]['nombre']
     };
 
-    handleOpenModalUsr = () =>{
+    handleOpenModalUsr = () => {
         this.setState({ openModalUsr: true });
     };
 
@@ -22,15 +25,15 @@ class UserPage extends Component {
         this.setState({ openModalUsr: false });
     };
 
-    handleOpenModalChangePass = () =>{
+    handleOpenModalChangePass = () => {
         this.setState({ openChangePass: true });
     };
 
-    handleCloseModalChangePass = () =>{
+    handleCloseModalChangePass = () => {
         this.setState({ openChangePass: false });
     };
 
-    handleLogOut = () =>{
+    handleLogOut = () => {
         this.props.logOut();
     };
 
@@ -39,20 +42,20 @@ class UserPage extends Component {
             <div>
                 <Router>
                     <NavBarCli OpenModalUsr={this.handleOpenModalUsr} LogOut={this.handleLogOut}
-                    openChangePass={this.handleOpenModalChangePass}/>
-                    <Greeting name={this.state.cliName}/>
+                        openChangePass={this.handleOpenModalChangePass} />
+                    <Greeting name={this.state.cli[0]['nombre']} />
 
                     <Route path="/Inicio" component={InicioCli} />
                     <Route path="/Liquidaciones" component={Liquidaciones} />
 
-                    <ModalUser open={this.state.openModalUsr} close={this.handleCloseModalUsr}/>
-                    <ChangePass open={this.state.openChangePass} close={this.handleCloseModalChangePass}/>
+                    <ModalUser open={this.state.openModalUsr} close={this.handleCloseModalUsr} usr={this.state.cli} />
+                    <ChangePass open={this.state.openChangePass} close={this.handleCloseModalChangePass} />
                 </Router>
 
 
 
             </div>
-            )
+        )
     }
 }
 

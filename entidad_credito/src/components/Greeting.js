@@ -11,7 +11,7 @@ import {
 export default class Greeting extends Component {
   state = { open: false }
 
-  componentDidMount(){
+  componentDidMount() {
     this.setState({ open: true });
     setTimeout(() => this.setState({ open: false }), 2000);
   }
@@ -22,10 +22,10 @@ export default class Greeting extends Component {
     const { open } = this.state;
 
     const defaultOptions = {
-        loop: true,
-        autoplay: true,
-        animationData: animationData,
-      };
+      loop: true,
+      autoplay: true,
+      animationData: animationData,
+    };
 
     return (
       <TransitionablePortal
@@ -36,21 +36,21 @@ export default class Greeting extends Component {
         open={this.state.open}
       >
 
-<Modal open='true' basic size='small' dimmer='blurring'>
-    <Modal.Content>
-    
-      <h1>
-      <Lottie
-        options={defaultOptions}
-        height={150}
-        width={150}
-    />
-        ¡ Bienvenido {this.props.name} !
-      </h1>
-    </Modal.Content>
-  </Modal>
+        <Modal open='true' basic size='small' dimmer='blurring'>
+          <Modal.Content>
 
-          {/*
+            <h1>
+              <Lottie
+                options={defaultOptions}
+                height={150}
+                width={150}
+              />
+              ¡ Bienvenido {this.props.name} !
+      </h1>
+          </Modal.Content>
+        </Modal>
+
+        {/*
          <Segment circular inverted color='olive' size='big'
           style={{ left: '40%', position: 'fixed', top: '50%', zIndex: 1000 }}
         >

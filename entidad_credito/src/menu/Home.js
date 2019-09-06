@@ -11,11 +11,11 @@ class Home extends Component {
     };
 
     openSnackBar = (message) => {
-        this.setState({msj: message});
-        this.setState({openSnackBar: true});
+        this.setState({ msj: message });
+        this.setState({ openSnackBar: true });
     }
 
-    closeSnackBar = () => this.setState({openSnackBar: false});
+    closeSnackBar = () => this.setState({ openSnackBar: false });
 
     handleItemClick = (e, { name }) => this.setState({ activeItem: name })
 
@@ -34,7 +34,7 @@ class Home extends Component {
 
                     <Grid.Row>
                         <Grid.Column>
-                            <LogIn setUsr={this.props.setUsr} open={this.openSnackBar}/>
+                            <LogIn setUsr={this.props.setUsr} openSnackBar={this.openSnackBar} />
                         </Grid.Column>
                     </Grid.Row>
                     <Grid.Row>
