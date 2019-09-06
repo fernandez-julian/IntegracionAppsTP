@@ -194,13 +194,14 @@ function executeSearchTarjetaByUsr(dni) {
 }
 
 function executeSetTarjeta(nroTarjeta, limite, fechaVto, codSeg, dni) {
-  request = new Request("INSERT INTO Tarjetas (nroTarjeta, limite, fechaVto, codSeg, dni) values (@nroTarjeta, @limite, @fechaVto, @codSeg, @dni)", function (err) {
+  request = new Request("INSERT INTO Tarjetas (nroTarjeta, limite, saldoDisponible, fechaVto, codSeg, dni) values (@nroTarjeta, @limite, @saldoDisponible, @fechaVto, @codSeg, @dni)", function (err) {
     if (err) {
       console.log(err);
     }
   });
   request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
   request.addParameter('limite', TYPES.Float, limite);
+  request.addParameter('dineroGastado', TYPES.Float, 0);
   request.addParameter('fechaVto', TYPES.Date, fechaVto);
   request.addParameter('codSeg', TYPES.Int, codSeg);
   request.addParameter('dni', TYPES.Int, dni);
