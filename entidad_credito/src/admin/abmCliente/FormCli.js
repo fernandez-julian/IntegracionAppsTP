@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Input, TextArea, Button, Select, Container, Header, Icon, Segment, Message, Confirm } from 'semantic-ui-react';
+import { Form, Button, Container, Header, Icon, Segment, Confirm } from 'semantic-ui-react';
 import SnackBar from '../../components/SnackBar';
 
 
@@ -108,7 +108,7 @@ class FromCli extends Component {
                         <Button.Group>
                             <Button onClick={this.resetForm}>Cancelar</Button>
                             <Button.Or />
-                            <Button positive /*onClick={this.onSubmit}*/>Aceptar</Button>
+                            <Button positive type='submit' /*onClick={this.onSubmit}*/>Aceptar</Button>
                         </Button.Group>
                     </Form>
                 </Segment>

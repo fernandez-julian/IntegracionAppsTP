@@ -11,10 +11,8 @@ class UserPage extends Component {
     state = {
         openModalUsr: false,
         openChangePass: false,
-        //cliName: this.props.name,
 
         cli: this.props.cli,
-        //cliName: this.state.cli[0]['nombre']
     };
 
     handleOpenModalUsr = () => {
@@ -49,7 +47,8 @@ class UserPage extends Component {
                     <Route path="/Liquidaciones" component={Liquidaciones} />
 
                     <ModalUser open={this.state.openModalUsr} close={this.handleCloseModalUsr} usr={this.state.cli} />
-                    <ChangePass open={this.state.openChangePass} close={this.handleCloseModalChangePass} />
+                    <ChangePass open={this.state.openChangePass} close={this.handleCloseModalChangePass}
+                    usrEmail ={this.state.cli[0]['mail']} currentPass={this.state.cli[0]['passPropia']}/>
                 </Router>
 
 

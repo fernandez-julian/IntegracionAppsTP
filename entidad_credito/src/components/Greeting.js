@@ -4,8 +4,6 @@ import animationData from './hello.json';
 import {
   TransitionablePortal,
   Modal,
-  Icon,
-  Button,
 } from 'semantic-ui-react'
 
 export default class Greeting extends Component {

@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: '192.168.0.13',
+  server: 'localhost',
   authentication: {
     type: 'default',
     options: {
@@ -109,7 +109,21 @@ app.use(
     request.addParameter('telefono', TYPES.NVarChar, telefono);
 
     connection.execSql(request);
-  })
+  }),
+
+  router.post('/clientes/cambiarPass', (req, res) => {
+    const { usrEmail, currentPass, newPass } = req.body;
+    request = new Request("UPDATE Usuarios SET passPropia = @passPropia WHERE mail = @mail", function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    request.addParameter('passPropia', TYPES.NVarChar, newPass);
+    request.addParameter('mail', TYPES.NVarChar, usrEmail);
+  
+    connection.execSql(request);
+    res.json();
+  }),
 
 
 );
