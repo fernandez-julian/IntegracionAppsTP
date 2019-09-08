@@ -1,23 +1,19 @@
 import _ from 'lodash'
 import faker from 'faker'
 import React, { Component } from 'react'
-import { Search, Grid, Header, Segment, Container, Table } from 'semantic-ui-react'
+import { Grid, Header, Segment, Container, Table, Input, Button, } from 'semantic-ui-react'
 
-const initialState = { isLoading: false, results: [], value: '' }
 
-const source = _.times(5, () => ({
-  title: faker.company.companyName(),
-  description: faker.company.catchPhrase(),
-  image: faker.internet.avatar(),
-  price: faker.finance.amount(0, 100, 2, '$'),
-}))
-
-export default class SearchExampleStandard extends Component {
+export default class SearchEstablecimientos extends Component {
 
   state = {
     error: null,
     isLoaded: false,
     establecimientos: [],
+
+    isLoading: false,
+    results: [],
+    value: '',
   };
 
   componentDidMount() {
@@ -28,8 +24,8 @@ export default class SearchExampleStandard extends Component {
           this.setState({
             isLoaded: true,
             establecimientos: JSON.parse(result),
+            results: JSON.parse(result),
           });
-          console.log(this.state.establecimientos)
         },
         (error) => {
           this.setState({
@@ -40,8 +36,33 @@ export default class SearchExampleStandard extends Component {
       )
   };
 
+  handleResultSelect = (e, { result }) => {
+    this.setState({ value: result.razonSocial });
+  };
+
+  handleResultSelect = (e, { result }) => this.setState({ value: result.razonSocial })
+
+  handleSearchChange = (e, { value }) => {
+    this.setState({ isLoading: true, value });
+
+    setTimeout(() => {
+      if (this.state.value.length < 1)//cuando el input de search esta vacio
+        return this.setState({ isLoading: false, results: this.state.establecimientos, value: '' });
+
+      const re = new RegExp(_.escapeRegExp(this.state.value), 'i');
+      const isMatch = (result) => re.test(result.razonSocial);
+
+      this.setState({
+        isLoading: false,
+        results: _.filter(this.state.establecimientos, isMatch),
+      })
+    }, 300)
+  }
+
+
+
   render() {
-    const { error, isLoaded, establecimientos } = this.state;
+    const { error, isLoaded, isLoading, value, results } = this.state;
     if (error) {
       return <div>Error: {error.message}</div>;
     } else if (!isLoaded) {
@@ -51,36 +72,36 @@ export default class SearchExampleStandard extends Component {
         <Container>
           <Grid>
             <Grid.Column width={6}>
-              <Search
-                /*loading={isLoading}
-                onResultSelect={this.handleResultSelect}
-                onSearchChange={_.debounce(this.handleSearchChange, 500, {
+              <Input
+                loading={isLoading}
+                icon={isLoading ? '' : 'search'}
+                onChange={_.debounce(this.handleSearchChange, 500, {
                   leading: true,
                 })}
-                results={results}
                 value={value}
-                {...this.props}
-                placeholder='Buscar'*/
+                placeholder='Buscar'
               />
             </Grid.Column>
             <Grid.Column width={10}>
               <Segment>
                 <Header>Establecimientos registrados</Header>
-                <Table color={'olive'}>
+                <Table color={'olive'} celled selectable>
                   <Table.Header>
                     <Table.Row>
                       <Table.HeaderCell>Establecimiento</Table.HeaderCell>
                       <Table.HeaderCell>Direccion</Table.HeaderCell>
                       <Table.HeaderCell>Telefono</Table.HeaderCell>
+                      <Table.HeaderCell/>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
 
-                    {establecimientos.map(item => (
+                    {results.map(item => (
                       <Table.Row>
                         <Table.Cell>{item.razonSocial}</Table.Cell>
                         <Table.Cell>{item.direccion}</Table.Cell>
                         <Table.Cell>{item.telefono}</Table.Cell>
+                        <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline'/></Table.Cell>
                       </Table.Row>
                     ))}
 
