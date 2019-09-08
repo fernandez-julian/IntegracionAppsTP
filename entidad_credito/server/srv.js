@@ -111,6 +111,31 @@ app.use(
     connection.execSql(request);
   }),
 
+  router.get('/entidades/obtener', (req, res) => {
+    const statement = "SELECT * FROM Entidades FOR JSON PATH"
+    function handleResult(err, numRows, rows) {
+      if (err) return console.error("Error: ", err);
+    }
+    let results = '';
+    let request = new tedious.Request(statement, handleResult);
+    request.on('row', function (columns) {
+      columns.forEach(function (column) {
+        results += column.value + " ";
+      });
+    });
+    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+      if (results == '') {
+        console.log('null');
+        res.status(404).json('No hay entidades registradas');
+      }
+      else {
+        console.log(results);
+        res.json(results);
+      }
+    });
+    connection.execSql(request);
+  }),
+
   router.post('/clientes/cambiarPass', (req, res) => {
     const { usrEmail, currentPass, newPass } = req.body;
     request = new Request("UPDATE Usuarios SET passPropia = @passPropia WHERE mail = @mail", function (err) {
@@ -120,7 +145,7 @@ app.use(
     });
     request.addParameter('passPropia', TYPES.NVarChar, newPass);
     request.addParameter('mail', TYPES.NVarChar, usrEmail);
-  
+
     connection.execSql(request);
     res.json();
   }),
