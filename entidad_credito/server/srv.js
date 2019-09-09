@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: 'localhost',
+  server: '192.168.0.13',
   authentication: {
     type: 'default',
     options: {

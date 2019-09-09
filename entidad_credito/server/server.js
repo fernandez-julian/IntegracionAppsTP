@@ -49,7 +49,14 @@ connection.on('connect', function (err) {
     // executeChangePass('aaa', 'maria@hotmail.com');
     // executeLogIn('maria@hotmail.com', 'aaa');
     // executeGetLiquidaciones(25487653, '2019-07-30', '2019-08-30');
-    // executeUpdateLimite(25487653, 10000);
+
+    // executeUpdateLimiteTarjeta(25487653, 10000);
+    // executeUpdateEntidad(1,'CABA', '425');
+    // executeUpdateDineroGastadoTarjeta(1, 150);
+    
+    // executeDeleteUsuario(3);
+    // executeDeleteTarjeta(2);
+    // executeDeleteEntidad(2);
   }
 });
 
@@ -388,7 +395,7 @@ function executeGetTotalResumen(dni, mes, anio) {
   connection.execSql(request);
 }
 
-function executeUpdateLimite(dni, limite) {
+function executeUpdateLimiteTarjeta(dni, limite) {
   request = new Request("UPDATE Tarjetas SET limite = @limite WHERE dni = @dni", function (err) {
     if (err) {
       console.log(err);
@@ -396,6 +403,64 @@ function executeUpdateLimite(dni, limite) {
   });
   request.addParameter('limite', TYPES.Float, limite);
   request.addParameter('dni', TYPES.Int, dni);
+
+  connection.execSql(request);
+}
+
+function executeUpdateEntidad(idEntidad, direccion, telefono){
+  request = new Request("UPDATE Entidades SET direccion = @direccion, telefono = @telefono WHERE idEntidad = @idEntidad", function (err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+  request.addParameter('idEntidad', TYPES.Int, idEntidad);
+  request.addParameter('direccion', TYPES.NVarChar, direccion);
+  request.addParameter('telefono', TYPES.NVarChar, telefono);
+
+  connection.execSql(request);
+}
+
+function executeUpdateDineroGastadoTarjeta(nroTarjeta, dinero){ //El dinero se suma al dineroGastado - en el WHERE compara el dineroGastado antes de sumar lo nuevo
+  request = new Request("UPDATE Tarjetas SET dineroGastado += @dineroGastado WHERE nroTarjeta = @nroTarjeta AND dineroGastado <= limite", function (err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+  request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
+  request.addParameter('dineroGastado', TYPES.Float, dinero);
+
+  connection.execSql(request);
+}
+
+function executeDeleteUsuario(dni){
+  request = new Request("DELETE FROM Usuarios WHERE dni = @dni", function (err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+  request.addParameter('dni', TYPES.Int, dni);
+
+  connection.execSql(request);
+}
+
+function executeDeleteTarjeta(nroTarjeta){
+  request = new Request("DELETE FROM Tarjetas WHERE nroTarjeta = @nroTarjeta", function (err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+  request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
+
+  connection.execSql(request);
+}
+
+function executeDeleteEntidad(idEntidad){
+  request = new Request("DELETE FROM Entidades WHERE idEntidad = @idEntidad", function (err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+  request.addParameter('idEntidad', TYPES.Int, idEntidad);
 
   connection.execSql(request);
 }
