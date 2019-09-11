@@ -79,7 +79,7 @@ export default class SearchEstablecimientos extends Component {
                   leading: true,
                 })}
                 value={value}
-                placeholder='Buscar'
+                placeholder='Buscar por razón social'
               />
             </Grid.Column>
             <Grid.Column width={10}>
@@ -88,7 +88,7 @@ export default class SearchEstablecimientos extends Component {
                 <Table color={'olive'} celled selectable>
                   <Table.Header>
                     <Table.Row>
-                      <Table.HeaderCell>Establecimiento</Table.HeaderCell>
+                      <Table.HeaderCell>Razón Social</Table.HeaderCell>
                       <Table.HeaderCell>Direccion</Table.HeaderCell>
                       <Table.HeaderCell>Telefono</Table.HeaderCell>
                       <Table.HeaderCell/>
