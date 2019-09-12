@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import faker from 'faker'
 import React, { Component } from 'react'
-import { Grid, Header, Segment, Container, Table, Input, Button, } from 'semantic-ui-react'
+import { Grid, Header, Segment, Container, Table, Input, Button, Popup, Checkbox } from 'semantic-ui-react'
+import ModalEdit from '../../components/ModalEdit'
 
 
 export default class SearchEstablecimientos extends Component {
@@ -14,6 +15,12 @@ export default class SearchEstablecimientos extends Component {
     isLoading: false,
     results: [],
     value: '',
+
+    edit: '',
+
+    modalEdit: false,
+
+    successEdit: false,
   };
 
   componentDidMount() {
@@ -59,7 +66,80 @@ export default class SearchEstablecimientos extends Component {
     }, 300)
   }
 
+  openModalEdit = () => {
+    this.setState({ modalEdit: true })
+  };
 
+  closeModalEdit = () => {
+    this.setState({ modalEdit: false });
+    this.setState({
+      edit: '',
+      successEdit: false,
+    });
+  };
+
+  handleEdit = (item) => {
+    this.setState({
+      edit: item,
+    });
+    this.openModalEdit();
+  };
+
+  editEstablecimiento = (newDir, newTel, id) => {
+    this.setState(state => {
+      const establecimientos = state.establecimientos.map((item, i) => {
+        if (item.idEntidad === id) {
+          var newItem = item;
+          if (newDir.length > 0)
+            newItem.direccion = newDir;
+          if (newTel.length > 0)
+            newItem.telefono = newTel;
+          return newItem;
+        }
+        else {
+          return item;
+        }
+      });
+      return { establecimientos };
+    })
+    let requestBody = {};
+    requestBody.idEntidad = id;
+    if (newDir.length > 0) {
+      requestBody.direccion = newDir;
+    } else {
+      requestBody.direccion = null;
+    }
+    if (newTel.length > 0) {
+      requestBody.telefono = newTel;
+    } else {
+      requestBody.telefono = null;
+    }
+
+    fetch('/entidades/actualizar', {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+    }).then(response => {
+      response.status === 200 ? this.setState({ successEdit: true }) : this.setState({ successEdit: false })/*'ocurrio un error'*/
+    }).then(this.setState({ results: this.state.establecimientos }));
+  };
+
+  handleDelete = (item) => {
+    //Falta ver como eliminar el item del array
+    console.log(this.state.establecimientos)
+    /*let requestBody = {};
+    requestBody.idEntidad = item.idEntidad;
+    fetch('/entidades/eliminar', {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+    }).then(this.setState({ results: this.state.establecimientos }));
+  };*/
+}
 
   render() {
     const { error, isLoaded, isLoading, value, results } = this.state;
@@ -91,17 +171,28 @@ export default class SearchEstablecimientos extends Component {
                       <Table.HeaderCell>Razón Social</Table.HeaderCell>
                       <Table.HeaderCell>Direccion</Table.HeaderCell>
                       <Table.HeaderCell>Telefono</Table.HeaderCell>
-                      <Table.HeaderCell/>
+                      <Table.HeaderCell />
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
 
                     {results.map(item => (
-                      <Table.Row>
+                      <Table.Row key={item.idEntidad}>
                         <Table.Cell>{item.razonSocial}</Table.Cell>
                         <Table.Cell>{item.direccion}</Table.Cell>
                         <Table.Cell>{item.telefono}</Table.Cell>
-                        <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline'/></Table.Cell>
+                        <Table.Cell textAlign='center'>
+                          <Popup
+                            content='Editar'
+                            trigger={<Button color='green' icon='edit' size='mini'
+                              onClick={() => this.handleEdit(item)} />}
+                          />
+                          <Popup
+                            content='Eliminar'
+                            trigger={<Button color='red' icon='trash alternate outline' size='mini'
+                              onClick={() => this.handleDelete(item)} />}
+                          />
+                        </Table.Cell>
                       </Table.Row>
                     ))}
 
@@ -110,6 +201,13 @@ export default class SearchEstablecimientos extends Component {
               </Segment>
             </Grid.Column>
           </Grid>
+          <ModalEdit
+            open={this.state.modalEdit}
+            close={this.closeModalEdit}
+            item={this.state.edit}
+            editEstablecimiento={this.editEstablecimiento}
+            successEdit={this.state.successEdit}
+          />
         </Container>
       );
     };

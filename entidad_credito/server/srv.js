@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: '192.168.0.13',
+  server: 'localhost',
   authentication: {
     type: 'default',
     options: {
@@ -97,6 +97,45 @@ app.use(
     res.json({ clave: passDefault });
   }),
 
+  router.get('/clientes/obtener', (req, res) => {
+    const statement = "SELECT * FROM Usuarios WHERE tipo = 'cliente' FOR JSON PATH"
+    function handleResult(err, numRows, rows) {
+      if (err) return console.error("Error: ", err);
+    }
+    let results = '';
+    let request = new tedious.Request(statement, handleResult);
+    request.on('row', function (columns) {
+      columns.forEach(function (column) {
+        results += column.value + " ";
+      });
+    });
+    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+      if (results == '') {
+        console.log('null');
+        //res.status(404).json('No hay clientes registrados');
+      }
+      else {
+        console.log(results);
+        res.json(results);
+      }
+    });
+    connection.execSql(request);
+  }),
+
+  router.post('/clientes/cambiarPass', (req, res) => {
+    const { usrEmail, currentPass, newPass } = req.body;
+    request = new Request("UPDATE Usuarios SET passPropia = @passPropia WHERE mail = @mail", function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    request.addParameter('passPropia', TYPES.NVarChar, newPass);
+    request.addParameter('mail', TYPES.NVarChar, usrEmail);
+
+    connection.execSql(request);
+    res.json();
+  }),
+
   router.post('/entidades/registrar', (req, res) => {
     const { razonSocial, direccion, telefono } = req.body;
     request = new Request("INSERT INTO Entidades (razonSocial, direccion, telefono) values (@razonSocial, @direccion, @telefono)", function (err) {
@@ -136,28 +175,36 @@ app.use(
     connection.execSql(request);
   }),
 
-  router.get('/clientes/obtener', (req, res) => {
-    const statement = "SELECT * FROM Usuarios WHERE tipo = 'cliente' FOR JSON PATH"
-    function handleResult(err, numRows, rows) {
-      if (err) return console.error("Error: ", err);
-    }
-    let results = '';
-    let request = new tedious.Request(statement, handleResult);
-    request.on('row', function (columns) {
-      columns.forEach(function (column) {
-        results += column.value + " ";
-      });
-    });
-    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-      if (results == '') {
-        console.log('null');
-        res.status(404).json('No hay clientes registrados');
-      }
-      else {
-        console.log(results);
-        res.json(results);
+  router.post('/entidades/actualizar', (req, res) => {
+    const { idEntidad, direccion, telefono } = req.body;
+    if(direccion !== null && telefono !== null)
+    var statement = "UPDATE Entidades SET direccion = @direccion, telefono = @telefono WHERE idEntidad = @idEntidad"
+    if(direccion !== null && telefono === null)
+    var statement = "UPDATE Entidades SET direccion = @direccion WHERE idEntidad = @idEntidad"
+    if(direccion === null && telefono !== null)
+    var statement = "UPDATE Entidades SET telefono = @telefono WHERE idEntidad = @idEntidad"
+    request = new Request(statement, function (err) {
+      if (err) {
+        console.log(err);
       }
     });
+    request.addParameter('idEntidad', TYPES.Int, idEntidad);
+    request.addParameter('direccion', TYPES.NVarChar, direccion);
+    request.addParameter('telefono', TYPES.NVarChar, telefono);
+  
+    connection.execSql(request);
+    res.json();
+  }),
+
+  router.post('/entidades/eliminar', (req, res) => {
+    const { idEntidad } = req.body;
+    request = new Request("DELETE FROM Entidades WHERE idEntidad = @idEntidad", function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    request.addParameter('idEntidad', TYPES.Int, idEntidad);
+  
     connection.execSql(request);
   }),
 
@@ -184,20 +231,6 @@ app.use(
       }
     });
     connection.execSql(request);
-  }),
-
-  router.post('/clientes/cambiarPass', (req, res) => {
-    const { usrEmail, currentPass, newPass } = req.body;
-    request = new Request("UPDATE Usuarios SET passPropia = @passPropia WHERE mail = @mail", function (err) {
-      if (err) {
-        console.log(err);
-      }
-    });
-    request.addParameter('passPropia', TYPES.NVarChar, newPass);
-    request.addParameter('mail', TYPES.NVarChar, usrEmail);
-
-    connection.execSql(request);
-    res.json();
   }),
 
 );
