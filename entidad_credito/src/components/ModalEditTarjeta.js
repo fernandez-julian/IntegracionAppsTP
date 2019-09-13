@@ -2,16 +2,15 @@ import React, { Component } from 'react';
 import { Modal, Icon, Button, Header, Container, Form, } from 'semantic-ui-react';
 import SnackBar from './SnackBar';
 
-class ModalEdit extends Component {
+class ModalEditTarjeta extends Component {
 
     state = {
-        direccion: '',
-        telefono: '',
+        limite: '',
     };
 
     resetForm = () => {
         document.getElementById("form").reset();
-        this.setState({ direccion: '', telefono: '' });
+        this.setState({ limite: ''});
     };
 
     handleExit = () => {
@@ -22,7 +21,7 @@ class ModalEdit extends Component {
     handleChange = (e, { name, value }) => this.setState({ [name]: value });
 
     handleSubmit = () => {
-        this.props.editEstablecimiento(this.state.direccion, this.state.telefono, this.props.item.idEntidad)
+        this.props.editTarjeta(this.state.limite, this.props.item.dni)
     };
 
     closeSnackBar = () => this.setState({ /*openSnackBar: false*/ });
@@ -34,22 +33,18 @@ class ModalEdit extends Component {
                     <Modal.Header>Editar</Modal.Header>
                     <Modal.Content>
                         <Modal.Description>
-                            <Header>{this.props.item.razonSocial}</Header>
+                            <p>Nro Tarjeta: {this.props.item.nroTarjeta} </p>
+                            <p> Dinero Gastado: {this.props.item.dineroGastado} </p>
+                            <p>Fecha Vencimiento: {this.props.item.fechaVto} </p>
+                            <p>Código Seguridad: {this.props.item.codSeg} </p>
+                            <p>DNI Asociado: {this.props.item.dni} </p>
                             <Form id='form' onSubmit={this.handleSubmit}>
                                 <Form.Input
-                                    label='Dirección'
+                                    label='Limite'
                                     fluid
                                     iconPosition="left"
-                                    placeholder={this.props.item.direccion}
-                                    name='direccion'
-                                    onChange={this.handleChange}
-                                />
-                                <Form.Input
-                                    label='Telefono'
-                                    fluid
-                                    iconPosition="left"
-                                    placeholder={this.props.item.telefono}
-                                    name='telefono'
+                                    placeholder={this.props.item.limite}
+                                    name='limite'
                                     onChange={this.handleChange}
                                 />
                                 <Button basic color='red' onClick={this.handleExit}>
@@ -69,4 +64,4 @@ class ModalEdit extends Component {
 }
 
 
-export default ModalEdit;
+export default ModalEditTarjeta;

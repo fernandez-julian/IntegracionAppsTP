@@ -1,7 +1,8 @@
 import _ from 'lodash'
 import faker from 'faker'
 import React, { Component } from 'react'
-import { Search, Grid, Header, Segment, Container, Table, Input, Button, } from 'semantic-ui-react'
+import { Search, Grid, Header, Segment, Container, Table, Input, Button, Popup } from 'semantic-ui-react'
+import ModalEdit from '../../components/ModalEditTarjeta'
 
 export default class SearchTarjeta extends Component {
   
@@ -13,6 +14,12 @@ export default class SearchTarjeta extends Component {
     isLoading: false,
     results: [],
     value: '',
+
+    edit: '',
+
+    modalEdit: false,
+
+    successEdit: false,
   };
 
   componentDidMount() {
@@ -58,6 +65,73 @@ export default class SearchTarjeta extends Component {
     }, 300)
   }
 
+  openModalEdit = () => {
+    this.setState({ modalEdit: true })
+  };
+
+  closeModalEdit = () => {
+    this.setState({ modalEdit: false });
+    this.setState({
+      edit: '',
+      successEdit: false,
+    });
+  };
+
+  handleEdit = (item) => {
+    this.setState({
+      edit: item,
+    });
+    this.openModalEdit();
+  };
+
+  editTarjeta = (newLimite, dni) => {
+    this.setState(state => {
+      const tarjetas = state.tarjetas.map((item, i) => {
+        if (item.dni === dni) {
+          var newItem = item;
+          if (newLimite.length > 0)
+            newItem.limite = newLimite;
+          return newItem;
+        }
+        else {
+          return item;
+        }
+      });
+      return { tarjetas };
+    })
+    let requestBody = {};
+    requestBody.dni = dni;
+    if (newLimite.length > 0) {
+      requestBody.limite = newLimite;
+    } else {
+      requestBody.limite = null;
+    }
+
+    fetch('/tarjetas/actualizar', {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+    }).then(response => {
+      response.status === 200 ? this.setState({ successEdit: true }) : this.setState({ successEdit: false })/*'ocurrio un error'*/
+    }).then(this.setState({ results: this.state.tarjetas }));
+  };
+
+  handleDelete = (item) => {
+    //Falta ver como eliminar el item del array
+    console.log(this.state.tarjetas)
+    /*let requestBody = {};
+    requestBody.idEntidad = item.idEntidad;
+    fetch('/entidades/eliminar', {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+    }).then(this.setState({ results: this.state.establecimientos }));
+  };*/
+}
 
   render() {
     const { error, isLoaded, isLoading, value, results } = this.state;
@@ -90,7 +164,7 @@ export default class SearchTarjeta extends Component {
                       <Table.HeaderCell>Limite</Table.HeaderCell>
                       <Table.HeaderCell>Dinero Gastado</Table.HeaderCell>
                       <Table.HeaderCell>Fecha Vencimiento</Table.HeaderCell>
-                      <Table.HeaderCell>Codigo Seguridad</Table.HeaderCell>
+                      <Table.HeaderCell>Código Seguridad</Table.HeaderCell>
                       <Table.HeaderCell>DNI Asociado</Table.HeaderCell>
                       <Table.HeaderCell/>
                     </Table.Row>
@@ -105,7 +179,18 @@ export default class SearchTarjeta extends Component {
                         <Table.Cell>{item.fechaVto}</Table.Cell>
                          <Table.Cell>{item.codSeg}</Table.Cell>
                         <Table.Cell>{item.dni}</Table.Cell>
-                        <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline'/></Table.Cell>
+                        <Table.Cell textAlign='center'>
+                          <Popup
+                            content='Editar'
+                            trigger={<Button color='green' icon='edit' size='mini'
+                              onClick={() => this.handleEdit(item)} />}
+                          />
+                          <Popup
+                            content='Eliminar'
+                            trigger={<Button color='red' icon='trash alternate outline' size='mini'
+                              onClick={() => this.handleDelete(item)} />}
+                          />
+                        </Table.Cell>
                       </Table.Row>
                     ))}
 
@@ -114,6 +199,13 @@ export default class SearchTarjeta extends Component {
               </Segment>
             </Grid.Column>
           </Grid>
+          <ModalEdit
+            open={this.state.modalEdit}
+            close={this.closeModalEdit}
+            item={this.state.edit}
+            editTarjeta={this.editTarjeta}
+            successEdit={this.state.successEdit}
+          />
         </Container>
       );
     };

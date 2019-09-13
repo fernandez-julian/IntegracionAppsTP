@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: 'localhost',
+  server: '10.100.0.151',
   authentication: {
     type: 'default',
     options: {
@@ -177,12 +177,12 @@ app.use(
 
   router.post('/entidades/actualizar', (req, res) => {
     const { idEntidad, direccion, telefono } = req.body;
-    if(direccion !== null && telefono !== null)
-    var statement = "UPDATE Entidades SET direccion = @direccion, telefono = @telefono WHERE idEntidad = @idEntidad"
-    if(direccion !== null && telefono === null)
-    var statement = "UPDATE Entidades SET direccion = @direccion WHERE idEntidad = @idEntidad"
-    if(direccion === null && telefono !== null)
-    var statement = "UPDATE Entidades SET telefono = @telefono WHERE idEntidad = @idEntidad"
+    if (direccion !== null && telefono !== null)
+      var statement = "UPDATE Entidades SET direccion = @direccion, telefono = @telefono WHERE idEntidad = @idEntidad"
+    if (direccion !== null && telefono === null)
+      var statement = "UPDATE Entidades SET direccion = @direccion WHERE idEntidad = @idEntidad"
+    if (direccion === null && telefono !== null)
+      var statement = "UPDATE Entidades SET telefono = @telefono WHERE idEntidad = @idEntidad"
     request = new Request(statement, function (err) {
       if (err) {
         console.log(err);
@@ -191,7 +191,7 @@ app.use(
     request.addParameter('idEntidad', TYPES.Int, idEntidad);
     request.addParameter('direccion', TYPES.NVarChar, direccion);
     request.addParameter('telefono', TYPES.NVarChar, telefono);
-  
+
     connection.execSql(request);
     res.json();
   }),
@@ -204,7 +204,7 @@ app.use(
       }
     });
     request.addParameter('idEntidad', TYPES.Int, idEntidad);
-  
+
     connection.execSql(request);
   }),
 
@@ -231,6 +231,22 @@ app.use(
       }
     });
     connection.execSql(request);
+  }),
+
+  router.post('/tarjetas/actualizar', (req, res) => {
+    const { dni, limite } = req.body;
+    if (limite !== null)
+      var statement = "UPDATE Tarjetas SET limite = @limite WHERE dni = @dni"
+    request = new Request(statement, function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    request.addParameter('limite', TYPES.Float, limite);
+    request.addParameter('dni', TYPES.Int, dni);
+
+    connection.execSql(request);
+    res.json();
   }),
 
 );
