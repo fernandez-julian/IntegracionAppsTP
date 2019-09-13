@@ -4,7 +4,7 @@ let tedious = require('tedious');
 
 var config = {
   //server: '192.168.0.13',
-  server: '192.168.0.13',
+  server: '10.100.0.151',
   authentication: {
     type: 'default',
     options: {
@@ -49,10 +49,11 @@ connection.on('connect', function (err) {
     // executeChangePass('aaa', 'maria@hotmail.com');
     // executeLogIn('maria@hotmail.com', 'aaa');
     // executeGetLiquidaciones(25487653, '2019-07-30', '2019-08-30');
+     executeGetTotalResumen(2, 8, 2019);
 
     // executeUpdateLimiteTarjeta(25487653, 10000);
     // executeUpdateEntidad(1,'CABA', '425');
-    // executeUpdateDineroGastadoTarjeta(1, 150);
+    // executeUpdateDineroGastadoTarjeta(1, 5);
     
     // executeDeleteUsuario(3);
     // executeDeleteTarjeta(2);
@@ -295,7 +296,7 @@ function executeSetResumen(mes, anio, nroTarjeta, dni) { //Necesita que executeG
   });
   var res;
   request.on('requestCompleted', function () { //Para que una query se pueda ejecutar dentro de otra
-    res = executeGetTotalResumen(dni, mes, anio) //NO FUNCIONA --> COMO HAGO PARA DEVOLVERLE EL TOTAL
+   // res = executeGetTotalResumen(dni, mes, anio) //NO FUNCIONA --> COMO HAGO PARA DEVOLVERLE EL TOTAL
   });
   request.addParameter('mes', TYPES.Int, mes);
   request.addParameter('anio', TYPES.Int, anio);
@@ -372,12 +373,12 @@ function executeLogIn(userName, password) {
 }
 
 function executeGetTotalResumen(dni, mes, anio) {
-  const statement = "SELECT SUM(m.monto) AS total FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta WHERE t.dni = @dni AND MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio FOR JSON PATH"
+  const statement = "SELECT fecha, monto, razonSocial FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni AND MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
   let results = '';
-  let request = new tedious.Request(statement, handleResult);
+  let request = new tedious.Request(statement, handleResult );
   request.addParameter('dni', TYPES.Int, dni);
   request.addParameter('mes', TYPES.Int, mes);
   request.addParameter('anio', TYPES.Int, anio);
@@ -387,9 +388,9 @@ function executeGetTotalResumen(dni, mes, anio) {
     });
   });
   request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-    if (results == '') return null;
+    if (results == '') console.log('null');
     else{ 
-      return (JSON.parse(results)[0]['total']);
+      console.log(results);
     }
   });
   connection.execSql(request);
@@ -420,8 +421,8 @@ function executeUpdateEntidad(idEntidad, direccion, telefono){
   connection.execSql(request);
 }
 
-function executeUpdateDineroGastadoTarjeta(nroTarjeta, dinero){ //El dinero se suma al dineroGastado - en el WHERE compara el dineroGastado antes de sumar lo nuevo
-  request = new Request("UPDATE Tarjetas SET dineroGastado += @dineroGastado WHERE nroTarjeta = @nroTarjeta AND dineroGastado <= limite", function (err) {
+function executeUpdateDineroGastadoTarjeta(nroTarjeta, dinero){ //El dinero se suma al dineroGastado - dineroGastado+@dineroGastado <= limite
+  request = new Request("UPDATE Tarjetas SET dineroGastado += @dineroGastado WHERE nroTarjeta = @nroTarjeta", function (err) {
     if (err) {
       console.log(err);
     }

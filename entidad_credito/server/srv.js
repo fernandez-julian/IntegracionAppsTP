@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: '10.100.0.151',
+  server: 'localhost',
   authentication: {
     type: 'default',
     options: {
@@ -248,6 +248,39 @@ app.use(
     connection.execSql(request);
     res.json();
   }),
+
+  router.get('/movimientos/obtener', (req, res) => {
+    const { dni, mes } = req.body;
+    var dt = new Date();
+    var anio = dt.getFullYear();
+    const statement = "SELECT fecha, monto, razonSocial FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni AND MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio FOR JSON PATH"
+    function handleResult(err, numRows, rows) {
+      if (err) return console.error("Error: ", err);
+    }
+    let results = '';
+    let request = new tedious.Request(statement, handleResult);
+    request.addParameter('dni', TYPES.Int, dni);
+    request.addParameter('mes', TYPES.Int, mes);
+    request.addParameter('anio', TYPES.Int, anio);
+    request.on('row', function (columns) {
+      columns.forEach(function (column) {
+        results += column.value + " ";
+      });
+    });
+    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+      if (results == '') {
+        console.log('null');
+        res.status(404).json('No hay movimientos registrados en ese periodo');
+      }
+      else {
+        console.log(results);
+        res.json(results);
+      }
+    });
+    connection.execSql(request);
+  }),
+
+
 
 );
 
