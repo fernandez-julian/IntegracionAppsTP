@@ -5,11 +5,12 @@ import { Search, Grid, Header, Segment, Container, Table, Input, Button, Popup }
 import ModalEdit from '../../components/ModalEditTarjeta'
 
 export default class SearchTarjeta extends Component {
-  
+
   state = {
     error: null,
     isLoaded: false,
     tarjetas: [],
+    successGetting: '',
 
     isLoading: false,
     results: [],
@@ -24,14 +25,31 @@ export default class SearchTarjeta extends Component {
 
   componentDidMount() {
     fetch('/tarjetas/obtener')
-      .then(response => response.json())
+      .then(response => {
+        if (response.status === 404) {
+          if (response.status === 404) {
+            this.state.successGetting = '404';
+            return response.json();
+          }
+          else {
+            this.state.successGetting = '200';
+            return response.json();
+          }
+        }
+      })
       .then(
         (result) => {
-          this.setState({
-            isLoaded: true,
-            tarjetas: JSON.parse(result),
-            results: JSON.parse(result),
-          });
+          if (this.state.success === '200') {
+            this.setState({
+              isLoaded: true,
+              tarjetas: JSON.parse(result),
+              results: JSON.parse(result),
+            });
+          }
+          else {
+            this.setState({ error: 'No hay datos registrados' })
+          }
+
         },
         (error) => {
           this.setState({
@@ -136,7 +154,7 @@ export default class SearchTarjeta extends Component {
   render() {
     const { error, isLoaded, isLoading, value, results } = this.state;
     if (error) {
-      return <div>Error: {error.message}</div>;
+      return <div>Error: {error}</div>;
     } else if (!isLoaded) {
       return <div> Cargando ... </div>;
     } else {
@@ -166,7 +184,7 @@ export default class SearchTarjeta extends Component {
                       <Table.HeaderCell>Fecha Vencimiento</Table.HeaderCell>
                       <Table.HeaderCell>Código Seguridad</Table.HeaderCell>
                       <Table.HeaderCell>DNI Asociado</Table.HeaderCell>
-                      <Table.HeaderCell/>
+                      <Table.HeaderCell />
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
@@ -177,7 +195,7 @@ export default class SearchTarjeta extends Component {
                         <Table.Cell>{item.limite}</Table.Cell>
                         <Table.Cell>{item.dineroGastado}</Table.Cell>
                         <Table.Cell>{item.fechaVto}</Table.Cell>
-                         <Table.Cell>{item.codSeg}</Table.Cell>
+                        <Table.Cell>{item.codSeg}</Table.Cell>
                         <Table.Cell>{item.dni}</Table.Cell>
                         <Table.Cell textAlign='center'>
                           <Popup
@@ -191,6 +209,7 @@ export default class SearchTarjeta extends Component {
                               onClick={() => this.handleDelete(item)} />}
                           />
                         </Table.Cell>
+                        <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline' /></Table.Cell>
                       </Table.Row>
                     ))}
 

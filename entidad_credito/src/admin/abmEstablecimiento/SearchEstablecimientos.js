@@ -127,9 +127,13 @@ export default class SearchEstablecimientos extends Component {
   };
 
   handleDelete = (item) => {
-    //Falta ver como eliminar el item del array
-    console.log(this.state.establecimientos)
-    /*let requestBody = {};
+    function found(element) {
+      return element.idEntidad === item.idEntidad;
+    }
+    var indexDelete = this.state.establecimientos.findIndex(found);
+    this.state.establecimientos.splice(indexDelete, 1);
+
+    let requestBody = {};
     requestBody.idEntidad = item.idEntidad;
     fetch('/entidades/eliminar', {
       method: "POST",
@@ -138,8 +142,7 @@ export default class SearchEstablecimientos extends Component {
         'Content-Type': 'application/json'
       }),
     }).then(this.setState({ results: this.state.establecimientos }));
-  };*/
-}
+  };
 
   render() {
     const { error, isLoaded, isLoading, value, results } = this.state;
