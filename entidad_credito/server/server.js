@@ -4,7 +4,7 @@ let tedious = require('tedious');
 
 var config = {
   //server: '192.168.0.13',
-  server: '10.100.0.151',
+  server: '192.168.0.13',
   authentication: {
     type: 'default',
     options: {
@@ -49,7 +49,7 @@ connection.on('connect', function (err) {
     // executeChangePass('aaa', 'maria@hotmail.com');
     // executeLogIn('maria@hotmail.com', 'aaa');
     // executeGetLiquidaciones(25487653, '2019-07-30', '2019-08-30');
-     executeGetTotalResumen(2, 8, 2019);
+    // executeGetTotalResumen(2, 8, 2019);
 
     // executeUpdateLimiteTarjeta(25487653, 10000);
     // executeUpdateEntidad(1,'CABA', '425');

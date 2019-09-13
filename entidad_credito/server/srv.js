@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: 'localhost',
+  server: '192.168.0.13',
   authentication: {
     type: 'default',
     options: {
@@ -136,6 +136,18 @@ app.use(
     res.json();
   }),
 
+  router.post('/clientes/eliminar', (req, res) => {
+    const { dni } = req.body;
+    request = new Request("DELETE FROM Usuarios WHERE dni = @dni", function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    request.addParameter('dni', TYPES.Int, dni);
+  
+    connection.execSql(request);
+  }),
+
   router.post('/entidades/registrar', (req, res) => {
     const { razonSocial, direccion, telefono } = req.body;
     request = new Request("INSERT INTO Entidades (razonSocial, direccion, telefono) values (@razonSocial, @direccion, @telefono)", function (err) {
@@ -233,6 +245,18 @@ app.use(
     connection.execSql(request);
   }),
 
+  router.post('/tarjetas/eliminar', (req, res) => {
+    const { nroTarjeta } = req.body;
+    request = new Request("DELETE FROM Tarjetas WHERE nroTarjeta = @nroTarjeta", function (err) {
+      if (err) {
+        console.log(err);
+      }
+    });
+    request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
+
+    connection.execSql(request);
+  }),
+
   router.post('/tarjetas/actualizar', (req, res) => {
     const { dni, limite } = req.body;
     if (limite !== null)
@@ -288,5 +312,12 @@ function defaulPass() {
   var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHJKMNPQRTUVWXYZ2346789";
   var contraseña = "";
   for (i = 0; i < 6; i++) contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length)); //pass de 6 caracteres
+  return (contraseña);
+}
+
+function defaulCodigoSeguridad() {
+  var caracteres = "0123456789";
+  var contraseña = "";
+  for (i = 0; i < 3; i++) contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length)); //pass de 3 caracteres
   return (contraseña);
 }

@@ -1,19 +1,9 @@
 import _ from 'lodash'
 import faker from 'faker'
 import React, { Component } from 'react'
-import { Search, Grid, Header, Segment, Container, Table, Input, Button, } from 'semantic-ui-react'
-
-/*const initialState = { isLoading: false, results: [], value: '' }
-
-const source = _.times(5, () => ({
-  title: faker.company.companyName(),
-  description: faker.company.catchPhrase(),
-  image: faker.internet.avatar(),
-  price: faker.finance.amount(0, 100, 2, '$'),
-}))*/
+import { Search, Grid, Header, Segment, Container, Table, Input, Button, Popup } from 'semantic-ui-react'
 
 export default class SearchCli extends Component {
-  //state = initialState
 
   state = {
     error: null,
@@ -45,16 +35,11 @@ export default class SearchCli extends Component {
       )
   };
 
-  //handleResultSelect = (e, { result }) => this.setState({ value: result.title })
-
   handleResultSelect = (e, { result }) => {
     this.setState({ value: result.mail });
   };
 
   handleResultSelect = (e, { result }) => this.setState({ value: result.mail })
-
-  /*handleSearchChange = (e, { value }) => {
-    this.setState({ isLoading: true, value })*/
 
   handleSearchChange = (e, { value }) => {
     this.setState({ isLoading: true, value });
@@ -71,6 +56,24 @@ export default class SearchCli extends Component {
       })
     }, 300)
   }
+
+  handleDelete = (item) => {
+    function found(element) {
+      return element.dni === item.dni;
+    }
+    var indexDelete = this.state.clientes.findIndex(found);
+    this.state.clientes.splice(indexDelete, 1);
+
+    let requestBody = {};
+    requestBody.dni = item.dni;
+    fetch('/clientes/eliminar', {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: new Headers({
+        'Content-Type': 'application/json'
+      }),
+    }).then(this.setState({ results: this.state.clientes }));
+  };
 
   render() {
     const { error, isLoaded, isLoading, value, results } = this.state;
@@ -118,7 +121,7 @@ export default class SearchCli extends Component {
                         <Table.Cell>{item.dni}</Table.Cell>
                         <Table.Cell>{item.telefono}</Table.Cell>
                         <Table.Cell>{item.mail}</Table.Cell>
-                        <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline' /></Table.Cell>
+                        <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline' onClick={() => this.handleDelete(item)}/></Table.Cell>
                       </Table.Row>
                     ))}
 
@@ -132,42 +135,3 @@ export default class SearchCli extends Component {
     };
   };
 };
-
-/*
-render() {
-  const { isLoading, value, results } = this.state
-
-  return (
-      <Container>
-          <Grid>
-              <Grid.Column width={6}>
-              <Search
-                  loading={isLoading}
-                  onResultSelect={this.handleResultSelect}
-                  onSearchChange={_.debounce(this.handleSearchChange, 500, {
-                  leading: true,
-                  })}
-                  results={results}
-                  value={value}
-                  {...this.props}
-                  placeholder='Buscar'
-              />
-              </Grid.Column>
-              <Grid.Column width={10}>
-              <Segment>
-                  <Header>State</Header>
-                  <pre style={{ overflowX: 'auto' }}>
-                  {JSON.stringify(this.state, null, 2)}
-                  </pre>
-                  <Header>Options</Header>
-                  <pre style={{ overflowX: 'auto' }}>
-                  {JSON.stringify(source, null, 2)}
-                  </pre>
-              </Segment>
-              </Grid.Column>
-          </Grid>
-      </Container>
-  )
-}
-}
-*/

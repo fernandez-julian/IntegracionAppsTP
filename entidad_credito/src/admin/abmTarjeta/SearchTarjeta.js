@@ -23,11 +23,12 @@ export default class SearchTarjeta extends Component {
     successEdit: false,
   };
 
-  componentDidMount() {
+  /*componentDidMount() {
     fetch('/tarjetas/obtener')
       .then(response => {
         if (response.status === 404) {
           if (response.status === 404) {
+            console.log('entre')
             this.state.successGetting = '404';
             return response.json();
           }
@@ -50,6 +51,26 @@ export default class SearchTarjeta extends Component {
             this.setState({ error: 'No hay datos registrados' })
           }
 
+        },
+        (error) => {
+          this.setState({
+            isLoaded: true,
+            error
+          });
+        }
+      )
+  };*/
+
+  componentDidMount() {
+    fetch('/tarjetas/obtener')
+      .then(response => response.json())
+      .then(
+        (result) => {
+          this.setState({
+            isLoaded: true,
+            tarjetas: JSON.parse(result),
+            results: JSON.parse(result),
+          });
         },
         (error) => {
           this.setState({
@@ -137,19 +158,23 @@ export default class SearchTarjeta extends Component {
   };
 
   handleDelete = (item) => {
-    //Falta ver como eliminar el item del array
-    console.log(this.state.tarjetas)
-    /*let requestBody = {};
-    requestBody.idEntidad = item.idEntidad;
-    fetch('/entidades/eliminar', {
+    function found(element) {
+      return element.nroTarjeta === item.nroTarjeta;
+    }
+    var indexDelete = this.state.tarjetas.findIndex(found);
+    this.state.tarjetas.splice(indexDelete, 1);
+
+    let requestBody = {};
+    requestBody.nroTarjeta = item.nroTarjeta;
+    fetch('/tarjetas/eliminar', {
       method: "POST",
       body: JSON.stringify(requestBody),
       headers: new Headers({
         'Content-Type': 'application/json'
       }),
-    }).then(this.setState({ results: this.state.establecimientos }));
-  };*/
-}
+    }).then(this.setState({ results: this.state.tarjetas }));
+  };
+
 
   render() {
     const { error, isLoaded, isLoading, value, results } = this.state;
@@ -209,7 +234,6 @@ export default class SearchTarjeta extends Component {
                               onClick={() => this.handleDelete(item)} />}
                           />
                         </Table.Cell>
-                        <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline' /></Table.Cell>
                       </Table.Row>
                     ))}
 
