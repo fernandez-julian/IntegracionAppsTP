@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import {Table, Container, Statistic, Segment, Label} from 'semantic-ui-react';
+import {Table, Container, Statistic, Segment, Dropdown} from 'semantic-ui-react';
 import _ from 'lodash';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -19,10 +19,8 @@ class Liquidaciones extends Component {
         data: tableData,
         direction: null,
 
-       startDate: new Date(),
-       endDate: new Date(),
-      
-      }
+        month:'',      
+      };
       
       handleChangeStartDate = date => {
         this.setState({
@@ -55,10 +53,28 @@ class Liquidaciones extends Component {
           data: data.reverse(),
           direction: direction === 'ascending' ? 'descending' : 'ascending',
         })
+      };
+
+      handleChange = (e, { value }) => {
+        //aca va el fetch para traer las liquidaciones
       }
     
     render(){
         const { column, data, direction } = this.state;
+        const options = [
+          { key: 1, text: 'Enero', value: 1 },
+          { key: 2, text: 'Febrero', value: 2 },
+          { key: 3, text: 'Marzo', value: 3 },
+          { key: 4, text: 'Abril', value: 4 },
+          { key: 5, text: 'Mayo', value: 5 },
+          { key: 6, text: 'Junio', value: 6 },
+          { key: 7, text: 'Julio', value: 7 },
+          { key: 8, text: 'Agosto', value: 8 },
+          { key: 9, text: 'Septiembre', value: 9 },
+          { key: 10, text: 'Octubre', value: 10 },
+          { key: 11, text: 'Noviembre', value: 11 },
+          { key: 12, text: 'Diciembre', value: 12 },
+        ]
         
         return(
             <Container>
@@ -80,16 +96,7 @@ class Liquidaciones extends Component {
                 </Segment>
 
                 <Segment>
-                <Label pointing='right' color='yellow'>Desde</Label>
-                  <DatePicker
-                  selected={this.state.startDate}
-                  onChange={this.handleChangeStartDate}
-                  />
-                  <Label pointing='right' color='yellow'>Hasta</Label>
-                  <DatePicker
-                  selected={this.state.endDate}
-                  onChange={this.handleChangeEndDate}
-                  />
+                  <Dropdown clearable options={options} selection onChange={this.handleChange}/>
                 </Segment>
               
                 <Segment>

@@ -280,7 +280,10 @@ app.use(
     connection.execSql(request);
   }),
 
+  router.get('/tarjetas/registrar', (req, res) => {
+    const { dni, limite } = req.body;
 
+  }),
 
 );
 
