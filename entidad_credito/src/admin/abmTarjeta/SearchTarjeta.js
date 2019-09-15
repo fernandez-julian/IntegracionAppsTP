@@ -1,16 +1,16 @@
 import _ from 'lodash'
 import faker from 'faker'
 import React, { Component } from 'react'
-import { Search, Grid, Header, Segment, Container, Table, Input, Button, Popup } from 'semantic-ui-react'
+import { Search, Grid, Header, Segment, Container, Table, Input, Button, Popup, Confirm } from 'semantic-ui-react'
 import ModalEdit from '../../components/ModalEditTarjeta'
 
 export default class SearchTarjeta extends Component {
 
   state = {
-    error: null,
+    errorMessageExistence: null,
     isLoaded: false,
     tarjetas: [],
-    successGetting: '',
+    cardExistence: null,
 
     isLoading: false,
     results: [],
@@ -21,44 +21,34 @@ export default class SearchTarjeta extends Component {
     modalEdit: false,
 
     successEdit: false,
+
+    openConfirm: false,
+    toDelete: null,
   };
 
   componentDidMount() {
     fetch('/tarjetas/obtener')
-      .then(response => {
-        if (response.status === 404) {
-          if (response.status === 404) {
-            this.state.successGetting = '404';
-            return response.json();
-          }
-          else {
-            this.state.successGetting = '200';
-            return response.json();
-          }
-        }
-      })
+    .then(response => {
+      if (response.status === 200) {
+        this.setState({ cardExistence: true })
+        return response.json();
+      }
+      else {
+        this.setState({ cardExistence: false})
+        return response.json();
+      }
+    })
       .then(
         (result) => {
-          if (this.state.success === '200') {
-            this.setState({
-              isLoaded: true,
-              tarjetas: JSON.parse(result),
-              results: JSON.parse(result),
-            });
-          }
-          else {
-            this.setState({ error: 'No hay datos registrados' })
-          }
-
-        },
-        (error) => {
-          this.setState({
+          this.state.cardExistence
+          ? this.setState({
             isLoaded: true,
-            error
-          });
-        }
-      )
-  };
+            tarjetas: JSON.parse(result),
+            results: JSON.parse(result),
+          })
+          : this.setState({ errorMessageExistence: result})
+        })
+  }
 
   handleResultSelect = (e, { result }) => {
     this.setState({ value: result.nroTarjeta });
@@ -136,7 +126,7 @@ export default class SearchTarjeta extends Component {
     }).then(this.setState({ results: this.state.tarjetas }));
   };
 
-  handleDelete = (item) => {
+  handleDelete = (item) => {//  completar!!!!!!!!!!!
     //Falta ver como eliminar el item del array
     console.log(this.state.tarjetas)
     /*let requestBody = {};
@@ -149,12 +139,21 @@ export default class SearchTarjeta extends Component {
       }),
     }).then(this.setState({ results: this.state.establecimientos }));
   };*/
-}
+};
+
+openConfirm = (item) => {
+  this.setState({toDelete: item, openConfirm: true});
+};
+
+closeConfirm = () => {
+  this.setState({openConfirm: false, toDelete: null});
+
+};
 
   render() {
-    const { error, isLoaded, isLoading, value, results } = this.state;
-    if (error) {
-      return <div>Error: {error}</div>;
+    const { errorMessageExistence, isLoaded, isLoading, value, results } = this.state;
+    if (errorMessageExistence) {
+      return <div>{errorMessageExistence}</div>;
     } else if (!isLoaded) {
       return <div> Cargando ... </div>;
     } else {
@@ -206,7 +205,7 @@ export default class SearchTarjeta extends Component {
                           <Popup
                             content='Eliminar'
                             trigger={<Button color='red' icon='trash alternate outline' size='mini'
-                              onClick={() => this.handleDelete(item)} />}
+                              onClick={() => this.openConfirm(item)} />}
                           />
                         </Table.Cell>
                         <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline' /></Table.Cell>
@@ -224,6 +223,14 @@ export default class SearchTarjeta extends Component {
             item={this.state.edit}
             editTarjeta={this.editTarjeta}
             successEdit={this.state.successEdit}
+          />
+          <Confirm
+          open={this.state.openConfirm}
+          onCancel={this.closeConfirm}
+          onConfirm={this.handleDelete}
+          content='¿Desea confirmar la baja de la tarjeta?'
+          cancelButton='Cancelar'
+          confirmButton="Confirmar"
           />
         </Container>
       );

@@ -12,6 +12,8 @@ class FromTarjeta extends Component {
 
         dni: '',
         limit: '',
+
+        createMessage: null,
     };
 
     resetForm = () => {
@@ -23,7 +25,7 @@ class FromTarjeta extends Component {
 
     closeConfirm = () => this.setState({ openConfirm: false });
 
-    closeSnackBar = () => this.setState({ openSnackBar: false });
+    closeSnackBar = () => this.setState({ openSnackBar: false, createMessage: null });
 
     onSubmit = () => this.openConfirm();
 
@@ -34,21 +36,26 @@ class FromTarjeta extends Component {
         });
     };
 
+    resetForm = () => {
+        document.getElementById("form").reset();
+        this.setState({ dni: '', limit: ''});
+    };
+
     createCard = event => {
         this.closeConfirm();
         let requestBody = {};
         requestBody.dni = this.state.dni;
         requestBody.limit = this.state.limit;
-        fetch('/', {
-
+        fetch('/tarjetas/registrar', {
             method: "POST",
             body: JSON.stringify(requestBody),
             headers: new Headers({
                 'Content-Type': 'application/json'
             }),
-        }).then(response => { return response.json() })
+        }).then(response => { 
+            return response.json() })
             .then(response => {
-                this.setState({ clave: response.clave });
+                this.setState({ createMessage: response });
             }).then(this.setState({ openSnackBar: true }));
     };
 
@@ -63,7 +70,7 @@ class FromTarjeta extends Component {
                     </Header>
                 </Segment>
                 <Segment>
-                    <Form>
+                    <Form id='form' onSubmit={this.onSubmit}>
                         <Form.Group widths='equal'>
                             <Form.Input
                                 name='dni'
@@ -79,9 +86,9 @@ class FromTarjeta extends Component {
                             />
                         </Form.Group>
                         <Button.Group>
-                            <Button>Cancelar</Button>
+                            <Button onClick={this.resetForm}>Cancelar</Button>
                             <Button.Or />
-                            <Button positive onClick={this.openConfirm}>Aceptar</Button>
+                            <Button positive type='submit'>Aceptar</Button>
                         </Button.Group>
                     </Form>
                 </Segment>
@@ -95,8 +102,8 @@ class FromTarjeta extends Component {
                     confirmButton="Confirmar"
                 />
 
-                <SnackBar success open={this.state.openSnackBar} close={this.closeSnackBar}>
-
+                <SnackBar info open={this.state.openSnackBar} close={this.closeSnackBar}>
+                    {this.state.createMessage}
                 </SnackBar>
 
 
