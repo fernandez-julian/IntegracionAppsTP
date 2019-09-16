@@ -1,6 +1,7 @@
 import _ from 'lodash'
 import faker from 'faker'
 import React, { Component } from 'react'
+import { Search, Grid, Header, Segment, Container, Table, Input, Button, Popup, Confirm } from 'semantic-ui-react'
 
 export default class SearchCli extends Component {
 
@@ -66,8 +67,8 @@ export default class SearchCli extends Component {
     }, 300)
   }
 
-  handleDelete = () => {
-    const item = this.state.toDelete;
+  handleDelete = (item) => {
+    item = this.state.toDelete;
     function found(element) {
       return element.dni === item.dni;
     }

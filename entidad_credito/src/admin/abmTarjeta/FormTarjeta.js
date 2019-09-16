@@ -11,7 +11,7 @@ class FromTarjeta extends Component {
         openSnackBar: false,
 
         dni: '',
-        limit: '',
+        limite: '',
 
         createMessage: null,
     };
@@ -38,14 +38,14 @@ class FromTarjeta extends Component {
 
     resetForm = () => {
         document.getElementById("form").reset();
-        this.setState({ dni: '', limit: ''});
+        this.setState({ dni: '', limite: ''});
     };
 
     createCard = event => {
         this.closeConfirm();
         let requestBody = {};
         requestBody.dni = this.state.dni;
-        requestBody.limit = this.state.limit;
+        requestBody.limite = this.state.limite;
         fetch('/tarjetas/registrar', {
             method: "POST",
             body: JSON.stringify(requestBody),
@@ -79,7 +79,7 @@ class FromTarjeta extends Component {
                                 onChange={this.handleInputs}
                             />
                             <Form.Input
-                                name='limit'
+                                name='limite'
                                 label='Limite de tarjeta'
                                 placeholder='$' required
                                 onChange={this.handleInputs}

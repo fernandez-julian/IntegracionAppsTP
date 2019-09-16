@@ -126,20 +126,25 @@ export default class SearchTarjeta extends Component {
     }).then(this.setState({ results: this.state.tarjetas }));
   };
 
-  handleDelete = (item) => {//  completar!!!!!!!!!!!
-    //Falta ver como eliminar el item del array
-    console.log(this.state.tarjetas)
-    /*let requestBody = {};
-    requestBody.idEntidad = item.idEntidad;
-    fetch('/entidades/eliminar', {
+  handleDelete = (item) => {
+    item = this.state.toDelete;
+    function found(element) {
+      return element.nroTarjeta === item.nroTarjeta;
+    }
+    var indexDelete = this.state.tarjetas.findIndex(found);
+    this.state.tarjetas.splice(indexDelete, 1);
+
+    let requestBody = {};
+    requestBody.nroTarjeta = item.nroTarjeta;
+    fetch('/tarjetas/eliminar', {
       method: "POST",
       body: JSON.stringify(requestBody),
       headers: new Headers({
         'Content-Type': 'application/json'
       }),
-    }).then(this.setState({ results: this.state.establecimientos }));
-  };*/
-};
+    })
+    .then(this.setState({ results: this.state.tarjetas, openConfirm: false, toDelete: null}));
+  };
 
 openConfirm = (item) => {
   this.setState({toDelete: item, openConfirm: true});

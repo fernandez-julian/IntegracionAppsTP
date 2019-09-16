@@ -16,7 +16,7 @@ class NavBarAdmin extends Component {
                 </Menu.Item>
                 <Dropdown item simple text='Clientes'>
                     <Dropdown.Menu>
-                        <Dropdown.Item><Link to="/FormCli" style={{ color: 'black' }}>Registrar</Link></Dropdown.Item>
+                        <Dropdown.Item><Link to="/FormCli" style={{ color: 'black' }}>Alta</Link></Dropdown.Item>
                         <Dropdown.Item><Link to="/SearchCli" style={{ color: 'black' }}>Buscar</Link></Dropdown.Item>
                     </Dropdown.Menu>
                 </Dropdown>

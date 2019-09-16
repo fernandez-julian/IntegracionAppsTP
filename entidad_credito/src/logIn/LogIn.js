@@ -84,6 +84,7 @@ class LogIn extends Component {
                   icon="user"
                   iconPosition="left"
                   placeholder="Dirección de E-mail"
+                  type="email"
                   name='email'
                   onChange={this.handleChange}
                   placeholder="Dirección de E-mail" required

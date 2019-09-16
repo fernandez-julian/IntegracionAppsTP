@@ -41,7 +41,7 @@ connection.on('connect', function (err) {
     // executeSearchEntidad('x');
 
     // executeSetUsuario('admin', 'juan', 'juan@hotmail.com', 'abc', '1874/12/07', 123456, 123456, 'juan@hotmail.com');
-    // executeSetTarjeta(10000, '2021/08/01', 875, 25487653);
+    // executeSetTarjeta('10000', '2021/08/01', 875, 25487653);
     // executeSetEntidad('x', 'CABA', '43742265');
     // executeSetResumen(8, 2019, 1002, 10); //CORREGIR
     // executeSetMovimiento('2019/02/15', 2650, 1, 1000)
@@ -56,7 +56,7 @@ connection.on('connect', function (err) {
     // executeUpdateDineroGastadoTarjeta(1, 5);
     
     // executeDeleteUsuario(3);
-    // executeDeleteTarjeta(2);
+    // executeDeleteTarjeta('2');
     // executeDeleteEntidad(2);
   }
 });
@@ -202,12 +202,12 @@ function executeSearchTarjetaByUsr(dni) {
 }
 
 function executeSetTarjeta(nroTarjeta, limite, fechaVto, codSeg, dni) {
-  request = new Request("INSERT INTO Tarjetas (nroTarjeta, limite, saldoDisponible, fechaVto, codSeg, dni) values (@nroTarjeta, @limite, @saldoDisponible, @fechaVto, @codSeg, @dni)", function (err) {
+  request = new Request("INSERT INTO Tarjetas (nroTarjeta, limite, dineroGastado, fechaVto, codSeg, dni) values (@nroTarjeta, @limite, @dineroGastado, @fechaVto, @codSeg, @dni)", function (err) {
     if (err) {
       console.log(err);
     }
   });
-  request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
+  request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
   request.addParameter('limite', TYPES.Float, limite);
   request.addParameter('dineroGastado', TYPES.Float, 0);
   request.addParameter('fechaVto', TYPES.Date, fechaVto);
@@ -450,7 +450,7 @@ function executeDeleteTarjeta(nroTarjeta){
       console.log(err);
     }
   });
-  request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
+  request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
 
   connection.execSql(request);
 }

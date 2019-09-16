@@ -81,7 +81,8 @@ class FromCli extends Component {
                             <Form.Input
                                 label='Fecha de nacimiento'
                                 name='fechaNac'
-                                placeholder='AA/MM/DD' required
+                                type='date'
+                                placeholder='AAAA/MM/DD' required
                                 onChange={this.handleInputs}
                             />
                             <Form.Input
@@ -101,6 +102,7 @@ class FromCli extends Component {
                             <Form.Input
                                 label='Email'
                                 name='mail'
+                                type='email'
                                 placeholder='Email@...' required
                                 onChange={this.handleInputs}
                             />

@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: '192.168.0.13',
+  server: '192.168.0.2',
   authentication: {
     type: 'default',
     options: {
@@ -252,50 +252,53 @@ app.use(
         console.log(err);
       }
     });
-    request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
+    request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
 
     connection.execSql(request);
   }),
 
   router.post('/tarjetas/registrar', (req, res) => {//------------------NO LO PUEDO HACER ANDAR (NO BORRAR LO COMENTADO)
     const { dni, limite } = req.body;
-    function a(call) {
-      var resultado = call
-      console.log(resultado)
-    }
-    a(existeUsr(dni));
-    /*
-    if(existeUsr(dni)){
-      if(tieneTarjeta(dni)){
-        res.status(403).json('El cliente ya posee una tarjeta asociada')
+    var existe;
+    var tiene;
+    existeUsr(dni, function (result) {
+      existe = result;
+      console.log('EXISTE= ', existe)
+      if(existe){
+        tieneTarjeta(dni, function(result){
+          tiene = result;
+          console.log('TIENE= ', tiene)
+          if(tiene){
+            res.status(403).json('El cliente ya posee una tarjeta asociada')
+          }
+          else{
+            var d = new Date();
+            const fechaVto = d.getFullYear() + 2;
+            const nroTarjeta = defaulCodigoNumerico(16) //numero con 16 digitos
+            const codSeg = Number(defaulCodigoNumerico(3)) // codigo de seguridad de 3 digitos
+     
+            request = new Request("INSERT INTO Tarjetas (nroTarjeta, limite, dineroGastado, fechaVto, codSeg, dni) values (@nroTarjeta, @limite, @dineroGastado, @fechaVto, @codSeg, @dni)", function (err) {
+              if (err) {
+                console.log(err);
+              }
+            });
+            request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
+            request.addParameter('limite', TYPES.Float, limite);
+            request.addParameter('dineroGastado', TYPES.Float, 0);
+            request.addParameter('fechaVto', TYPES.Date, fechaVto);
+            request.addParameter('codSeg', TYPES.Int, codSeg);
+            request.addParameter('dni', TYPES.Int, dni);
+          
+            connection.execSql(request);
+     
+            res.status(200).json('El proceso de registracion se realizo con exito')
+          }
+        })
       }
       else{
-        var d = new Date();
-        const fechaVto = d.getFullYear() + 10;
-        const nroTarjeta = generarNumTarjeta(16) //numero con 16 digitos
-        const codSeg = defaulPass(4) // codigo de seguridad de 4 digitos
- 
-        request = new Request("INSERT INTO Tarjetas (nroTarjeta, limite, saldoDisponible, fechaVto, codSeg, dni) values (@nroTarjeta, @limite, @saldoDisponible, @fechaVto, @codSeg, @dni)", function (err) {
-          if (err) {
-            console.log(err);
-          }
-        });
-        request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
-        request.addParameter('limite', TYPES.Float, limite);
-        request.addParameter('dineroGastado', TYPES.Float, 0);
-        request.addParameter('fechaVto', TYPES.Date, fechaVto);
-        request.addParameter('codSeg', TYPES.Int, codSeg);
-        request.addParameter('dni', TYPES.Int, dni);
-      
-        connection.execSql(request);
- 
-        res.status(200).json('El proceso de registracion se realizo con exito')
+        res.status(404).json('El cliente solicitado no se encuentra registrado')
       }
-    }
-    else{
-      res.status(404).json('El cliente solicitado no se encuentra registrado')
-    }
-    */
+    })
   }),
 
   router.post('/tarjetas/actualizar', (req, res) => {
@@ -343,8 +346,8 @@ app.use(
       });
       connection.execSql(request);
     })
-  }), 
-  
+  }),
+
 );
 
 function defaulPass(long) {
@@ -354,91 +357,91 @@ function defaulPass(long) {
   return (contraseña);
 }
 
-  function defaulCodigoSeguridad() {
-    var caracteres = "0123456789";
-    var contraseña = "";
-    for (i = 0; i < 3; i++) contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length)); //pass de 3 caracteres
-    return (contraseña);
+function defaulCodigoNumerico(long) {
+  var caracteres = "0123456789";
+  var contraseña = "";
+  for (i = 0; i < long; i++) contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
+  return (contraseña);
+}
+
+
+function generarNumTarjeta(long) {
+  function chequearDuplicados(cod) {
+    const statement = "select * from Tarjetas where nroTarjeta = @cod FOR JSON PATH"
+    function handleResult(err, numRows, rows) {
+      if (err) return console.error("Error: ", err);
+    }
+    let results = '';
+    let request = new tedious.Request(statement, handleResult);
+    request.addParameter('cod', TYPES.Int, cod);
+    request.on('row', function (columns) {
+      columns.forEach(function (column) {
+        results += column.value + " ";
+      });
+    });
+    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+      if (results == '') {
+        return false
+      }
+      else {
+        return true
+      }
+    });
+    connection.execSql(request);
+  };
+
+  var cod = defaulCodigoNumerico(3);
+
+  while (defaulCodigoNumerico(3)) {
+    cod = defaulCodigoNumerico(3);
   }
+  return (cod);
+};
 
-
-  function generarNumTarjeta(long) {
-    function chequearDuplicados(cod) {
-      const statement = "select * from Tarjetas where nroTarjeta = @cod FOR JSON PATH"
-      function handleResult(err, numRows, rows) {
-        if (err) return console.error("Error: ", err);
-      }
-      let results = '';
-      let request = new tedious.Request(statement, handleResult);
-      request.addParameter('cod', TYPES.Int, cod);
-      request.on('row', function (columns) {
-        columns.forEach(function (column) {
-          results += column.value + " ";
-        });
-      });
-      request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-        if (results == '') {
-          return false
-        }
-        else {
-          return true
-        }
-      });
-      connection.execSql(request);
-    };
-
-    var cod = defaultPass(long);
-
-    while (chequearDuplicados(cod)) {
-      cod = defaultPass(long);
+async function existeUsr(dni, callback) {
+  const statement = "SELECT * FROM Usuarios WHERE dni = @dni FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.addParameter('dni', TYPES.Int, dni);
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
+    if (results == '') {
+      return callback(false)
     }
-    return (cod);
-  };
-
-  function existeUsr(dni) {
-    const statement = "SELECT * FROM Usuarios WHERE dni = @dni FOR JSON PATH"
-    function handleResult(err, numRows, rows) {
-      if (err) return console.error("Error: ", err);
+    else {
+      return callback(true)
     }
-    let results = '';
-    let request = new tedious.Request(statement, handleResult);
-    request.addParameter('dni', TYPES.Int, dni);
-    request.on('row', function (columns) {
-      columns.forEach(function (column) {
-        results += column.value + " ";
-      });
-    });
-    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-      if (results == '') {
-        return false
-      }
-      else {
-        return true
-      }
-    });
-    connection.execSql(request);
-  };
+  });
+  connection.execSql(request);
+};
 
-  function tieneTarjeta(dni) {
-    const statement = "SELECT * FROM Tarjetas where dni =@dni FOR JSON PATH"
-    function handleResult(err, numRows, rows) {
-      if (err) return console.error("Error: ", err);
+function tieneTarjeta(dni, callback) {
+  const statement = "SELECT * FROM Tarjetas where dni = @dni FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.addParameter('dni', TYPES.Int, dni);
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
+    if (results == '') {
+      return callback(false)
     }
-    let results = '';
-    let request = new tedious.Request(statement, handleResult);
-    request.addParameter('dni', TYPES.Int, dni);
-    request.on('row', function (columns) {
-      columns.forEach(function (column) {
-        results += column.value + " ";
-      });
-    });
-    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-      if (results == '') {
-        return false
-      }
-      else {
-        return true
-      }
-    });
-    connection.execSql(request);
-  };
+    else {
+      return callback(true)
+    }
+  });
+  connection.execSql(request);
+};
