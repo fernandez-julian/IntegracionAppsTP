@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import faker from 'faker'
 import React, { Component } from 'react'
-import { Search, Grid, Header, Segment, Container, Table, Input, Button, Popup } from 'semantic-ui-react'
 
 export default class SearchCli extends Component {
 
@@ -10,27 +9,37 @@ export default class SearchCli extends Component {
     isLoaded: false,
     clientes: [],
 
+    customerExistence: null,
+    errorMessageExistence: null,
     isLoading: false,
     results: [],
     value: '',
+
+    openConfirm: false,
+    toDelete: null,
   };
 
   componentDidMount() {
     fetch('/clientes/obtener')
-      .then(response => response.json())
+    .then(response => {
+      if (response.status === 200) {
+        this.setState({ customerExistence: true })
+        return response.json();
+      }
+      else {
+        this.setState({ customerExistence: false})
+        return response.json();
+      }
+    })
       .then(
         (result) => {
-          this.setState({
+          this.state.customerExistence
+          ?  this.setState({
             isLoaded: true,
             clientes: JSON.parse(result),
             results: JSON.parse(result),
-          });
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
+          })
+          : this.setState({ errorMessageExistence: result })
         }
       )
   };
@@ -57,7 +66,8 @@ export default class SearchCli extends Component {
     }, 300)
   }
 
-  handleDelete = (item) => {
+  handleDelete = () => {
+    const item = this.state.toDelete;
     function found(element) {
       return element.dni === item.dni;
     }
@@ -72,13 +82,23 @@ export default class SearchCli extends Component {
       headers: new Headers({
         'Content-Type': 'application/json'
       }),
-    }).then(this.setState({ results: this.state.clientes }));
+    })
+    .then(this.setState({ results: this.state.clientes, openConfirm: false, toDelete: null}));
+  };
+
+  openConfirm = (item) => {
+    this.setState({toDelete: item, openConfirm: true});
+  };
+
+  closeConfirm = () => {
+    this.setState({openConfirm: false, toDelete: null});
+
   };
 
   render() {
-    const { error, isLoaded, isLoading, value, results } = this.state;
-    if (error) {
-      return <div>Error: {error.message}</div>;
+    const { errorMessageExistence, isLoaded, isLoading, value, results } = this.state;
+    if (errorMessageExistence) {
+      return <div>{errorMessageExistence}</div>;
     } else if (!isLoaded) {
       return <div> Cargando ... </div>;
     } else {
@@ -121,7 +141,12 @@ export default class SearchCli extends Component {
                         <Table.Cell>{item.dni}</Table.Cell>
                         <Table.Cell>{item.telefono}</Table.Cell>
                         <Table.Cell>{item.mail}</Table.Cell>
-                        <Table.Cell textAlign='center'><Button color='red' icon='trash alternate outline' onClick={() => this.handleDelete(item)}/></Table.Cell>
+                        <Table.Cell textAlign='center'>
+                        <Popup
+                            content='Eliminar'
+                            trigger={<Button color='red' icon='trash alternate outline' size='mini'
+                              onClick={() => this.openConfirm(item)} />}
+                          /></Table.Cell>
                       </Table.Row>
                     ))}
 
@@ -130,6 +155,14 @@ export default class SearchCli extends Component {
               </Segment>
             </Grid.Column>
           </Grid>
+          <Confirm
+          open={this.state.openConfirm}
+          onCancel={this.closeConfirm}
+          onConfirm={this.handleDelete}
+          content='¿Desea confirmar la baja del cliente?'
+          cancelButton='Cancelar'
+          confirmButton="Confirmar"
+          />
         </Container>
       );
     };

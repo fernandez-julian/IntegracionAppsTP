@@ -108,7 +108,7 @@ class FromCli extends Component {
                         <Button.Group>
                             <Button onClick={this.resetForm}>Cancelar</Button>
                             <Button.Or />
-                            <Button positive type='submit' /*onClick={this.onSubmit}*/>Aceptar</Button>
+                            <Button positive type='submit'>Aceptar</Button>
                         </Button.Group>
                     </Form>
                 </Segment>

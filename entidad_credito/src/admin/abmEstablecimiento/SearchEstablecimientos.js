@@ -1,7 +1,7 @@
 import _ from 'lodash'
 import faker from 'faker'
 import React, { Component } from 'react'
-import { Grid, Header, Segment, Container, Table, Input, Button, Popup, Checkbox } from 'semantic-ui-react'
+import { Grid, Header, Segment, Container, Table, Input, Button, Popup, Confirm } from 'semantic-ui-react'
 import ModalEdit from '../../components/ModalEditEstablecimiento'
 
 
@@ -21,27 +21,36 @@ export default class SearchEstablecimientos extends Component {
     modalEdit: false,
 
     successEdit: false,
+    entidadesExistence: false,
+    errorMessageExistence: null,
+
+    openConfirm: false,
+    toDelete: null,
   };
 
   componentDidMount() {
     fetch('/entidades/obtener')
-      .then(response => response.json())
+      .then(response => {
+        if (response.status === 200) {
+          this.setState({ entidadesExistence: true })
+          return response.json();
+        }
+        else {
+          this.setState({ entidadesExistence: false})
+          return response.json();
+        }
+      })
       .then(
         (result) => {
-          this.setState({
-            isLoaded: true,
-            establecimientos: JSON.parse(result),
-            results: JSON.parse(result),
-          });
-        },
-        (error) => {
-          this.setState({
-            isLoaded: true,
-            error
-          });
-        }
-      )
-  };
+          this.state.entidadesExistence
+            ? this.setState({
+              isLoaded: true,
+              establecimientos: JSON.parse(result),
+              results: JSON.parse(result),
+            })
+            : this.setState({ errorMessageExistence: result })
+        })
+      }
 
   handleResultSelect = (e, { result }) => {
     this.setState({ value: result.razonSocial });
@@ -141,13 +150,22 @@ export default class SearchEstablecimientos extends Component {
       headers: new Headers({
         'Content-Type': 'application/json'
       }),
-    }).then(this.setState({ results: this.state.establecimientos }));
+    }).then(this.setState({ results: this.state.establecimientos, openConfirm: false, toDelete: null}));
+  };
+
+  openConfirm = (item) => {
+    this.setState({toDelete: item, openConfirm: true});
+  };
+
+  closeConfirm = () => {
+    this.setState({openConfirm: false, toDelete: null});
+
   };
 
   render() {
-    const { error, isLoaded, isLoading, value, results } = this.state;
-    if (error) {
-      return <div>Error: {error.message}</div>;
+    const { errorMessageExistence, isLoaded, isLoading, value, results } = this.state;
+    if (errorMessageExistence) {
+      return <div>{errorMessageExistence}</div>;
     } else if (!isLoaded) {
       return <div> Cargando ... </div>;
     } else {
@@ -193,7 +211,7 @@ export default class SearchEstablecimientos extends Component {
                           <Popup
                             content='Eliminar'
                             trigger={<Button color='red' icon='trash alternate outline' size='mini'
-                              onClick={() => this.handleDelete(item)} />}
+                              onClick={() => this.openConfirm(item)} />}
                           />
                         </Table.Cell>
                       </Table.Row>
@@ -210,6 +228,15 @@ export default class SearchEstablecimientos extends Component {
             item={this.state.edit}
             editEstablecimiento={this.editEstablecimiento}
             successEdit={this.state.successEdit}
+          />
+
+          <Confirm
+          open={this.state.openConfirm}
+          onCancel={this.closeConfirm}
+          onConfirm={this.handleDelete}
+          content='¿Desea confirmar la baja del establecimiento?'
+          cancelButton='Cancelar'
+          confirmButton="Confirmar"
           />
         </Container>
       );
