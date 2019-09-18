@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Table, Container, Statistic, Segment, Dropdown } from 'semantic-ui-react';
+import { Table, Container, Statistic, Segment, Dropdown, Icon } from 'semantic-ui-react';
 import _ from 'lodash';
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
@@ -19,7 +19,10 @@ class Liquidaciones extends Component {
     data: tableData,
     direction: null,
 
+    isLoaded: true,
     liquidaciones: [],
+    montoTotalMes:null,
+    errorMessageExistence: null,
 
     movementsExistence: false,
     errorMessage: null,
@@ -40,12 +43,12 @@ class Liquidaciones extends Component {
   };
 
   handleSort = (clickedColumn) => () => {
-    const { column, data, direction } = this.state
+    const { column, liquidaciones, direction } = this.state
 
     if (column !== clickedColumn) {
       this.setState({
         column: clickedColumn,
-        data: _.sortBy(data, [clickedColumn]),
+        liquidaciones: _.sortBy(liquidaciones, [clickedColumn]),
         direction: 'ascending',
       })
 
@@ -53,13 +56,14 @@ class Liquidaciones extends Component {
     }
 
     this.setState({
-      data: data.reverse(),
+      liquidaciones: liquidaciones.reverse(),
       direction: direction === 'ascending' ? 'descending' : 'ascending',
     })
   };
 
   handleChange = (e, { value }) => {
-    //aca va el fetch para traer las liquidaciones
+    if(value !== ''){
+    this.setState({isLoaded: false, errorMessageExistence: null})
     let requestBody = {};
     requestBody.dni = this.props.cli[0]['dni'];
     requestBody.mes = value;
@@ -76,20 +80,29 @@ class Liquidaciones extends Component {
           return response.json();
         }
         else {
-          this.setState({ movementsExistence: false})
+          this.setState({ movementsExistence: false })
           return response.json();
         }
       })
       .then(
         (result) => {
-          this.state.movementsExistence
-            ? this.setState({ liquidaciones: JSON.parse(result) })
-            : this.setState({ errorMessage: result })
+          if(this.state.movementsExistence){
+            var obj = JSON.parse(result);
+            var montoMes = obj[obj.length-1];
+            var liq = obj.splice(obj.length-1, 1);
+          
+            this.setState({ isLoaded: true, liquidaciones: obj, montoTotalMes: montoMes['montoTotal'] })
+          }else{
+            this.setState({ errorMessageExistence: result, montoTotalMes:null })
+          }
+            console.log(this.state.liquidaciones)
+            console.log(this.state.montoTotalMes)
         })
+      }
   }
 
   render() {
-    const { column, data, direction } = this.state;
+    const { column, direction, liquidaciones, errorMessageExistence, isLoaded, montoTotalMes } = this.state;
     const options = [
       { key: 1, text: 'Enero', value: 1 },
       { key: 2, text: 'Febrero', value: 2 },
@@ -109,70 +122,69 @@ class Liquidaciones extends Component {
         <Container>
           <Segment>
             <Statistic.Group>
-              <Statistic>
-                <Statistic.Value>22</Statistic.Value>
-                <Statistic.Label>cant meses</Statistic.Label>
+            <Statistic>
+                <Statistic.Value>{liquidaciones.length}</Statistic.Value>
+                <Statistic.Label>Movimientos</Statistic.Label>
               </Statistic>
               <Statistic>
-                <Statistic.Value>31,200</Statistic.Value>
-                <Statistic.Label>gasto anual</Statistic.Label>
-              </Statistic>
-              <Statistic>
-                <Statistic.Value>22</Statistic.Value>
-                <Statistic.Label>otro</Statistic.Label>
+                <Statistic.Value><Icon name='dollar sign'/>{montoTotalMes}</Statistic.Value>
+                <Statistic.Label>LIQUIDADO</Statistic.Label>
               </Statistic>
             </Statistic.Group>
           </Segment>
 
           <Segment>
-            <Dropdown clearable options={options} selection onChange={this.handleChange} />
+            <Dropdown clearable options={options} selection onChange={this.handleChange}/>
           </Segment>
 
-          {!this.state.statusMovements
-          ? this.state.errorMessage
-          : <Segment>
-              <Table sortable celled fixed>
-                  <Table.Header>
+          {
+            errorMessageExistence
+            ? <div>{errorMessageExistence}</div>
+            :!isLoaded
+              ?<div> Cargando ... </div>
+              :<Segment>
+            <Table sortable celled fixed>
+              <Table.Header>
+                <Table.Row>
+                  <Table.HeaderCell
+                    sorted={column === 'fecha' ? direction : null}
+                    onClick={this.handleSort('fecha')}
+                  >
+                    Fecha
+                      </Table.HeaderCell>
+                  <Table.HeaderCell
+                    sorted={column === 'razonSocial' ? direction : null}
+                    onClick={this.handleSort('razonSocial')}
+                  >
+                    Razon social
+                      </Table.HeaderCell>
+                  <Table.HeaderCell
+                    sorted={column === 'monto' ? direction : null}
+                    onClick={this.handleSort('monto')}
+                  >
+                    Monto
+                      </Table.HeaderCell>
+                </Table.Row>
+              </Table.Header>
+              <Table.Body>
+                {liquidaciones.map(item => (
                   <Table.Row>
-                      <Table.HeaderCell
-                      sorted={column === 'name' ? direction : null}
-                      onClick={this.handleSort('name')}
-                      >
-                      Name
-                      </Table.HeaderCell>
-                      <Table.HeaderCell
-                      sorted={column === 'age' ? direction : null}
-                      onClick={this.handleSort('age')}
-                      >
-                      Age
-                      </Table.HeaderCell>
-                      <Table.HeaderCell
-                      sorted={column === 'gender' ? direction : null}
-                      onClick={this.handleSort('gender')}
-                      >
-                      Gender
-                      </Table.HeaderCell>
+                    <Table.Cell>{item.fecha}</Table.Cell>
+                    <Table.Cell>{item.razonSocial}</Table.Cell>
+                    <Table.Cell>$ {item.monto}</Table.Cell>
                   </Table.Row>
-                    </Table.Header>
-                    <Table.Body>
-                    {_.map(data, ({ age, gender, name }) => (
-                        <Table.Row key={name}>
-                        <Table.Cell>{name}</Table.Cell>
-                        <Table.Cell>{age}</Table.Cell>
-                        <Table.Cell>{gender}</Table.Cell>
-                    </Table.Row>
-                    ))}
-                    </Table.Body>
-                    </Table>}
-            </Segment>
+                ))}
+              </Table.Body>
+            </Table>
+          </Segment>
           }
-          
+
         </Container>
 
 
       );
+    }
   }
 
-}
 
-export default Liquidaciones
+    export default Liquidaciones

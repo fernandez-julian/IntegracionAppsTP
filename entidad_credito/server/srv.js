@@ -8,7 +8,7 @@ let tedious = require('tedious');
 var config = {
   //server: '192.168.0.13',
   //10.100.44.211
-  server: '192.168.0.2',
+  server: 'localhost',
   authentication: {
     type: 'default',
     options: {
@@ -257,7 +257,7 @@ app.use(
     connection.execSql(request);
   }),
 
-  router.post('/tarjetas/registrar', (req, res) => {//------------------NO LO PUEDO HACER ANDAR (NO BORRAR LO COMENTADO)
+  router.post('/tarjetas/registrar', (req, res) => {
     const { dni, limite } = req.body;
     var existe;
     var tiene;
@@ -334,18 +334,27 @@ app.use(
       columns.forEach(function (column) {
         results += column.value + " ";
       });
+    });
       request.on('doneProc', function (rowCount, more, returnStatus, rows) {
         if (results == '') {
           console.log('null');
           res.status(404).json('No hay movimientos registrados en ese periodo');
         }
         else {
-          console.log(results);
-          res.json(results);
+          var obj = JSON.parse(results)
+
+          const reducer = (accumulator, currentValue) => accumulator + currentValue;
+          var amountobj = obj.map((item) => {return item['monto']});
+          var totalAmountobj = amountobj.reduce(reducer);
+
+          var totalAmountobjJSON = {"montoTotal": totalAmountobj};
+          obj.push(totalAmountobjJSON);
+          var response = JSON.stringify(obj);
+          console.log(response)
+          res.json(response);
         }
       });
       connection.execSql(request);
-    })
   }),
 
 );
