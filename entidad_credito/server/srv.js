@@ -357,6 +357,30 @@ app.use(
       connection.execSql(request);
   }),
 
+  router.post('/movimientos/topCinco', (req, res) => {
+    const { dni } = req.body;
+    const statement = "SELECT TOP 5 fecha, monto, razonSocial FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni ORDER BY m.fecha DESC FOR JSON PATH"
+    function handleResult(err, numRows, rows) {
+      if (err) return console.error("Error: ", err);
+    }
+    let results = '';
+    let request = new tedious.Request(statement, handleResult );
+    request.addParameter('dni', TYPES.Int, dni);
+    request.on('row', function (columns) {
+      columns.forEach(function (column) {
+        results += column.value + " ";
+      });
+    });
+    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+      if (results == '') console.log('null');
+      else{ 
+        console.log(results);
+        res.json(results);
+      }
+    });
+    connection.execSql(request);
+  }),
+
 );
 
 function defaulPass(long) {

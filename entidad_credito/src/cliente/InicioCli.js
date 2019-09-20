@@ -2,60 +2,93 @@ import React, { Component } from "react";
 import {
     Container,
     Header,
-    Image,
-    Icon,
+    Table,
     Divider,
     Segment,
     Statistic,
-  } from 'semantic-ui-react';
+} from 'semantic-ui-react';
 
 
 class InicioCli extends Component {
-    render(){
-        return(
+    state = {
+        movements: [],
+        movementsExistence: false,
+    };
+
+    componentDidMount() {
+        let requestBody = {};
+        requestBody.dni = this.props.cli[0]['dni'];
+        fetch('/movimientos/topCinco', {
+            method: "POST",
+            body: JSON.stringify(requestBody),
+            headers: new Headers({
+                'Content-Type': 'application/json'
+            }),
+        })
+            .then(response => {
+                if (response.status === 200) {
+                    this.setState({ movementsExistence: true })
+                    return response.json();
+                }
+                else {
+                    this.setState({ movementsExistence: false })
+                    return response.json();
+                }
+            })
+            .then(
+                (result) => {
+                    if (this.state.movementsExistence)
+                        this.setState({ movements: JSON.parse(result) })
+                })
+    };
+
+    render() {
+        const { movements, movementsExistence } = this.state;
+        return (
             <Container>
-                    <Segment >
-                        <Header as='h3'>sección uno (Pueden ir estadisticas)</Header>
-                        <Statistic.Group>
-                            <Statistic>
-                                <Statistic.Value>22</Statistic.Value>
-                                <Statistic.Label>MOVIMIENTOS</Statistic.Label>
-                            </Statistic>
+                <Segment >
+                    <Header as='h2'>ULTIMOS MOVIMIENTOS</Header>
+                    <Statistic.Group>
+                        <Statistic>
+                            <Statistic.Value>{movements.length}</Statistic.Value>
+                            <Statistic.Label>MOVIMIENTOS</Statistic.Label>
+                        </Statistic>
+                    </Statistic.Group>
 
-                            <Statistic>
-                                <Statistic.Value text>
-                                    TRES<br />
-                                    MIL
-                                </Statistic.Value>
-                                <Statistic.Label>SUSCRIPCIONES</Statistic.Label>
-                            </Statistic>
+                    <Divider section />
 
-                            <Statistic>
-                                <Statistic.Value>
-                                    <Icon name='plane' />
-                                    5
-                                </Statistic.Value>
-                                <Statistic.Label>VUELOS</Statistic.Label>
-                            </Statistic>
+                    <Statistic.Group>
+                        <Table celled fixed>
+                            <Table.Header>
+                                <Table.Row>
+                                    <Table.HeaderCell>
+                                        Fecha
+                                     </Table.HeaderCell>
+                                    <Table.HeaderCell>
+                                        Razon social
+                                    </Table.HeaderCell>
+                                    <Table.HeaderCell>
+                                        Monto
+                                    </Table.HeaderCell>
+                                </Table.Row>
+                            </Table.Header>
+                            <Table.Body>
+                                {movementsExistence
+                                    ? movements.map(item => (
+                                        <Table.Row>
+                                            <Table.Cell>{item.fecha}</Table.Cell>
+                                            <Table.Cell>{item.razonSocial}</Table.Cell>
+                                            <Table.Cell>$ {item.monto}</Table.Cell>
+                                        </Table.Row>
+                                    ))
+                                    : null
+                                }
 
-                            <Statistic>
-                                <Statistic.Value>
-                                    <Image src='https://react.semantic-ui.com/images/avatar/small/joe.jpg' inline circular />
-                                    42
-                                </Statistic.Value>
-                                <Statistic.Label>....</Statistic.Label>
-                            </Statistic>
-                        </Statistic.Group>
-
-                        <Divider section />
-
-                        <Header as='h3'>sección dos</Header>
-                        <Image src='https://react.semantic-ui.com/images/wireframe/short-paragraph.png' />
-                    </Segment>
-                    <Segment>
-                        
-                    </Segment>
-                </Container>
+                            </Table.Body>
+                        </Table>
+                    </Statistic.Group>
+                </Segment>
+            </Container>
         );
     }
 }

@@ -93,7 +93,7 @@ class Liquidaciones extends Component {
           
             this.setState({ isLoaded: true, liquidaciones: obj, montoTotalMes: montoMes['montoTotal'] })
           }else{
-            this.setState({ errorMessageExistence: result, montoTotalMes:null })
+            this.setState({ errorMessageExistence: result, montoTotalMes:null, liquidaciones: [] })
           }
             console.log(this.state.liquidaciones)
             console.log(this.state.montoTotalMes)

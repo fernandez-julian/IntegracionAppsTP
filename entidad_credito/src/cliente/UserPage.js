@@ -43,7 +43,7 @@ class UserPage extends Component {
                         openChangePass={this.handleOpenModalChangePass} />
                     <Greeting name={this.state.cli[0]['nombre']} />
 
-                    <Route path="/Inicio" component={InicioCli} />
+                    <Route path="/Inicio" render={() => <InicioCli cli={this.state.cli}/>} />
                     <Route path="/Liquidaciones" render={() => <Liquidaciones cli={this.state.cli}/>}/>
 
                     <ModalUser open={this.state.openModalUsr} close={this.handleCloseModalUsr} usr={this.state.cli} />
