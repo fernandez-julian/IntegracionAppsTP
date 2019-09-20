@@ -372,7 +372,10 @@ app.use(
       });
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-      if (results == '') console.log('null');
+      if (results == '') {
+        console.log('null');
+        res.status(404).json('No hay movimientos registrados');
+      }
       else{ 
         console.log(results);
         res.json(results);
