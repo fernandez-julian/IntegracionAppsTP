@@ -319,6 +319,11 @@ app.use(
 
   router.post('/movimientos/obtener', (req, res) => {
     const { dni, mes } = req.body;
+    var currentDate = new Date();
+    if(currentDate.getMonth()+1 === mes){
+      res.status(403).json('La liquidación del presente mes no está disponible ya que el mes aún está en curso');
+    }
+    else{
     var dt = new Date();
     var anio = dt.getFullYear();
     const statement = "SELECT fecha, monto, razonSocial FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni AND MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio FOR JSON PATH"
@@ -355,6 +360,7 @@ app.use(
         }
       });
       connection.execSql(request);
+    }
   }),
 
   router.post('/movimientos/topCinco', (req, res) => {
