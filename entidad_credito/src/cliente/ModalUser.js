@@ -27,17 +27,10 @@ import {
 class ModalUser extends Component {
 
     state = {
-        activeItem: 'home',
         usr: this.props.usr,
     }
 
-    handleItemClick = (e, { name }) => this.setState({ activeItem: name })
-
     render() {
-
-        const { activeItem } = this.state
-
-
         return (
             <Container>
                 <Modal open={this.props.open} onClose={this.props.close}>

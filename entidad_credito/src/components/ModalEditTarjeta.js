@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Modal, Icon, Button, Header, Container, Form, } from 'semantic-ui-react';
+import { Modal, Icon, Button, Container, Form, } from 'semantic-ui-react';
 import SnackBar from './SnackBar';
 
 class ModalEditTarjeta extends Component {

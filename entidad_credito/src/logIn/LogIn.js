@@ -41,11 +41,11 @@ class LogIn extends Component {
         }),
         }).then(response => {
           if(response.status === 404){
-            this.state.success = '404';
+            this.setState({success: '404'});
             return response.json(); 
           }
           else{
-            this.state.success = '200';
+            this.setState({success: '200'});
             return response.json();
           }
         }).then(response => {
@@ -83,7 +83,6 @@ class LogIn extends Component {
                   fluid
                   icon="user"
                   iconPosition="left"
-                  placeholder="Dirección de E-mail"
                   type="email"
                   name='email'
                   onChange={this.handleChange}
