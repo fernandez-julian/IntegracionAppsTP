@@ -60,7 +60,7 @@ class ModalUser extends Component {
                                     <Grid.Column>
                                         <Segment>
                                             <Menu pointing>
-                                                <Tab.Pane style={{paddingRight: 60}}>
+                                                <Tab.Pane style={{paddingRight: 20}}>
                                                     <p>Nombre: {this.state.usr[0]['nombre']}</p>
                                                     <p> Nombre Usuario: {this.state.usr[0]['mail']}</p>
                                                     <p>Fecha Nacimiento: {this.state.usr[0]['fechaNac']}</p>
