@@ -50,11 +50,7 @@ export default class SearchTarjeta extends Component {
         })
   }
 
-  handleResultSelect = (e, { result }) => {
-    this.setState({ value: result.nroTarjeta });
-  };
-
-  handleResultSelect = (e, { result }) => this.setState({ value: result.nroTarjeta })
+  handleResultSelect = (e, { result }) => this.setState({ value: result.dni })
 
   handleSearchChange = (e, { value }) => {
     this.setState({ isLoading: true, value });
@@ -64,7 +60,7 @@ export default class SearchTarjeta extends Component {
         return this.setState({ isLoading: false, results: this.state.tarjetas, value: '' });
 
       const re = new RegExp(_.escapeRegExp(this.state.value), 'i');
-      const isMatch = (result) => re.test(result.nroTarjeta);
+      const isMatch = (result) => re.test(result.dni);
 
       this.setState({
         isLoading: false,
@@ -173,7 +169,7 @@ closeConfirm = () => {
                   leading: true,
                 })}
                 value={value}
-                placeholder='Buscar por nro tarjeta'
+                placeholder='Buscar por dni cliente'
               />
             </Grid.Column>
             <Grid.Column width={10}>
