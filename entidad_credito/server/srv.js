@@ -64,11 +64,9 @@ app.use(
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
       if (results == '') {
-        console.log('null');
         res.status(404).json('Usuario o clave icorrecto');
       }
       else {
-        console.log(results);
         res.json(results);
       }
     });
@@ -111,11 +109,9 @@ app.use(
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
       if (results == '') {
-        console.log('null');
         res.status(404).json('No hay clientes registrados');
       }
       else {
-        console.log(results);
         res.json(results);
       }
     });
@@ -176,11 +172,9 @@ app.use(
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
       if (results == '') {
-        console.log('null');
         res.status(404).json('No hay entidades registradas');
       }
       else {
-        console.log(results);
         res.json(results);
       }
     });
@@ -234,11 +228,9 @@ app.use(
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
       if (results == '') {
-        console.log('null');
         res.status(404).json('No hay tarjetas registradas');
       }
       else {
-        console.log(results);
         res.json(results);
       }
     });
@@ -263,17 +255,17 @@ app.use(
     var tiene;
     existeUsr(dni, function (result) {
       existe = result;
-      console.log('EXISTE= ', existe)
       if(existe){
         tieneTarjeta(dni, function(result){
           tiene = result;
-          console.log('TIENE= ', tiene)
           if(tiene){
             res.status(403).json('El cliente ya posee una tarjeta asociada')
           }
           else{
             var d = new Date();
-            const fechaVto = d.getFullYear() + 2;
+            const anio = d.getFullYear() + 2;
+            const fechaVto = d;
+            fechaVto.setFullYear(anio);
             const nroTarjeta = defaulCodigoNumerico(16) //numero con 16 digitos
             const codSeg = Number(defaulCodigoNumerico(3)) // codigo de seguridad de 3 digitos
      
@@ -342,7 +334,6 @@ app.use(
     });
       request.on('doneProc', function (rowCount, more, returnStatus, rows) {
         if (results == '') {
-          console.log('null');
           res.status(404).json('No hay movimientos registrados en ese periodo');
         }
         else {
@@ -355,7 +346,6 @@ app.use(
           var totalAmountobjJSON = {"montoTotal": totalAmountobj};
           obj.push(totalAmountobjJSON);
           var response = JSON.stringify(obj);
-          console.log(response)
           res.json(response);
         }
       });
@@ -379,11 +369,9 @@ app.use(
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
       if (results == '') {
-        console.log('null');
         res.status(404).json('No hay movimientos registrados');
       }
       else{ 
-        console.log(results);
         res.json(results);
       }
     });
