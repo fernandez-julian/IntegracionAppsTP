@@ -3,8 +3,7 @@ let tedious = require('tedious');
 //const Request = require('tedious').Request;
 
 var config = {
-  //server: '192.168.0.13',
-  server: '192.168.0.13',
+  server: 'localhost',
   authentication: {
     type: 'default',
     options: {
@@ -58,6 +57,8 @@ connection.on('connect', function (err) {
     // executeDeleteUsuario(3);
     // executeDeleteTarjeta('2');
     // executeDeleteEntidad(2);
+
+    // executeFacturarEntidades(1, 2019);
   }
 });
 
@@ -421,14 +422,14 @@ function executeUpdateEntidad(idEntidad, direccion, telefono){
   connection.execSql(request);
 }
 
-function executeUpdateDineroGastadoTarjeta(nroTarjeta, dinero){ //El dinero se suma al dineroGastado - dineroGastado+@dineroGastado <= limite
+function executeUpdateDineroGastadoTarjeta(nroTarjeta, monto){ //El dinero se suma al dineroGastado - dineroGastado+@dineroGastado <= limite
   request = new Request("UPDATE Tarjetas SET dineroGastado += @dineroGastado WHERE nroTarjeta = @nroTarjeta", function (err) {
     if (err) {
       console.log(err);
     }
   });
   request.addParameter('nroTarjeta', TYPES.Int, nroTarjeta);
-  request.addParameter('dineroGastado', TYPES.Float, dinero);
+  request.addParameter('dineroGastado', TYPES.Float, monto);
 
   connection.execSql(request);
 }
@@ -474,6 +475,29 @@ function executeGetTopMovimientos(dni) { //Devuelve los ultimos 5 movimientos qu
   let results = '';
   let request = new tedious.Request(statement, handleResult );
   request.addParameter('dni', TYPES.Int, dni);
+  request.addParameter('mes', TYPES.Int, mes);
+  request.addParameter('anio', TYPES.Int, anio);
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+    if (results == '') console.log('null');
+    else{ 
+      console.log(results);
+    }
+  });
+  connection.execSql(request);
+}
+
+function executeFacturarEntidades(mes, anio) {
+  const statement = "SELECT e.idEntidad, e.razonSocial, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio GROUP BY e.idEntidad, e.razonSocial FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult );
   request.addParameter('mes', TYPES.Int, mes);
   request.addParameter('anio', TYPES.Int, anio);
   request.on('row', function (columns) {

@@ -6,9 +6,7 @@ const router = express.Router();
 let tedious = require('tedious');
 
 var config = {
-  //server: '192.168.0.13',
-  //10.100.44.211
-  server: '10.100.49.234',
+  server: 'localhost',
   authentication: {
     type: 'default',
     options: {
@@ -255,20 +253,20 @@ app.use(
     var tiene;
     existeUsr(dni, function (result) {
       existe = result;
-      if(existe){
-        tieneTarjeta(dni, function(result){
+      if (existe) {
+        tieneTarjeta(dni, function (result) {
           tiene = result;
-          if(tiene){
+          if (tiene) {
             res.status(403).json('El cliente ya posee una tarjeta asociada')
           }
-          else{
+          else {
             var d = new Date();
             const anio = d.getFullYear() + 2;
             const fechaVto = d;
             fechaVto.setFullYear(anio);
             const nroTarjeta = defaulCodigoNumerico(16) //numero con 16 digitos
             const codSeg = Number(defaulCodigoNumerico(3)) // codigo de seguridad de 3 digitos
-     
+
             request = new Request("INSERT INTO Tarjetas (nroTarjeta, limite, dineroGastado, fechaVto, codSeg, dni) values (@nroTarjeta, @limite, @dineroGastado, @fechaVto, @codSeg, @dni)", function (err) {
               if (err) {
                 console.log(err);
@@ -280,14 +278,14 @@ app.use(
             request.addParameter('fechaVto', TYPES.Date, fechaVto);
             request.addParameter('codSeg', TYPES.Int, codSeg);
             request.addParameter('dni', TYPES.Int, dni);
-          
+
             connection.execSql(request);
-     
+
             res.status(200).json('El proceso de registracion se realizo con exito')
           }
         })
       }
-      else{
+      else {
         res.status(404).json('El cliente solicitado no se encuentra registrado')
       }
     })
@@ -312,26 +310,26 @@ app.use(
   router.post('/movimientos/obtener', (req, res) => {
     const { dni, mes } = req.body;
     var currentDate = new Date();
-    if(currentDate.getMonth()+1 === mes){
+    if (currentDate.getMonth() + 1 === mes) {
       res.status(403).json('La liquidación del presente mes no está disponible ya que el mes aún está en curso');
     }
-    else{
-    var dt = new Date();
-    var anio = dt.getFullYear();
-    const statement = "SELECT fecha, monto, razonSocial FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni AND MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio FOR JSON PATH"
-    function handleResult(err, numRows, rows) {
-      if (err) return console.error("Error: ", err);
-    }
-    let results = '';
-    let request = new tedious.Request(statement, handleResult);
-    request.addParameter('dni', TYPES.Int, dni);
-    request.addParameter('mes', TYPES.Int, mes);
-    request.addParameter('anio', TYPES.Int, anio);
-    request.on('row', function (columns) {
-      columns.forEach(function (column) {
-        results += column.value + " ";
+    else {
+      var dt = new Date();
+      var anio = dt.getFullYear();
+      const statement = "SELECT fecha, monto, razonSocial FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni AND MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio FOR JSON PATH"
+      function handleResult(err, numRows, rows) {
+        if (err) return console.error("Error: ", err);
+      }
+      let results = '';
+      let request = new tedious.Request(statement, handleResult);
+      request.addParameter('dni', TYPES.Int, dni);
+      request.addParameter('mes', TYPES.Int, mes);
+      request.addParameter('anio', TYPES.Int, anio);
+      request.on('row', function (columns) {
+        columns.forEach(function (column) {
+          results += column.value + " ";
+        });
       });
-    });
       request.on('doneProc', function (rowCount, more, returnStatus, rows) {
         if (results == '') {
           res.status(404).json('No hay movimientos registrados en ese periodo');
@@ -340,10 +338,10 @@ app.use(
           var obj = JSON.parse(results)
 
           const reducer = (accumulator, currentValue) => accumulator + currentValue;
-          var amountobj = obj.map((item) => {return item['monto']});
+          var amountobj = obj.map((item) => { return item['monto'] });
           var totalAmountobj = amountobj.reduce(reducer);
 
-          var totalAmountobjJSON = {"montoTotal": totalAmountobj};
+          var totalAmountobjJSON = { "montoTotal": totalAmountobj };
           obj.push(totalAmountobjJSON);
           var response = JSON.stringify(obj);
           res.json(response);
@@ -360,7 +358,7 @@ app.use(
       if (err) return console.error("Error: ", err);
     }
     let results = '';
-    let request = new tedious.Request(statement, handleResult );
+    let request = new tedious.Request(statement, handleResult);
     request.addParameter('dni', TYPES.Int, dni);
     request.on('row', function (columns) {
       columns.forEach(function (column) {
@@ -371,14 +369,69 @@ app.use(
       if (results == '') {
         res.status(404).json('No hay movimientos registrados');
       }
-      else{ 
+      else {
         res.json(results);
       }
     });
     connection.execSql(request);
   }),
 
-);
+  router.post('/movimientos/registrar', (req, res) => {
+    const { nroTarjeta, monto, idEntidad } = req.body;
+    var habilitado;
+    isHabilitado(nroTarjeta, monto, function (result) {
+      habilitado = result;
+      if (habilitado) {
+        request = new Request("INSERT INTO Movimientos (fecha, monto, idEntidad, nroTarjeta) values (@fecha, @monto, @idEntidad, @nroTarjeta)", function (err) {
+          if (err) {
+            console.log(err);
+          }
+        });
+        var fechaHoy = new Date();
+        request.addParameter('fecha', TYPES.Date, fechaHoy);
+        request.addParameter('monto', TYPES.Float, monto);
+        request.addParameter('idEntidad', TYPES.Int, idEntidad);
+        request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
+
+        connection.execSql(request);
+
+        res.status(200).json('El proceso de compra se realizo con exito')
+      }
+      else {
+        res.status(404).json('Pago rechazado por saldo insuficiente')
+      }
+    })
+  }),
+
+  router.post('/entidades/facturar', (req, res) => { //VER EN QUE FECHAS SE FACTURA + QUE PASA SI UNA ENTIDAD NO FACTURA?
+    //const { } = req.body;
+    const statement = "SELECT e.idEntidad, e.razonSocial, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio GROUP BY e.idEntidad, e.razonSocial FOR JSON PATH"
+    function handleResult(err, numRows, rows) {
+      if (err) return console.error("Error: ", err);
+    }
+    let results = '';
+    let request = new tedious.Request(statement, handleResult);
+    var dt = new Date();
+    var anio = dt.getFullYear();
+    var mes = dt.getMonth();
+    request.addParameter('mes', TYPES.Int, mes);
+    request.addParameter('anio', TYPES.Int, anio);
+    request.on('row', function (columns) {
+      columns.forEach(function (column) {
+        results += column.value + " ";
+      });
+    });
+    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+      if (results == '') {
+        //SI NO HAY PAGOS A ENTIDADES EN ESE MES QUE SE HACE?
+      }
+      else {
+        res.json(results);
+      }
+    });
+    connection.execSql(request);
+  }),
+)
 
 function defaulPass(long) {
   var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHJKMNPQRTUVWXYZ2346789";
@@ -393,7 +446,6 @@ function defaulCodigoNumerico(long) {
   for (i = 0; i < long; i++) contraseña += caracteres.charAt(Math.floor(Math.random() * caracteres.length));
   return (contraseña);
 }
-
 
 function generarNumTarjeta(long) {
   function chequearDuplicados(cod) {
@@ -475,3 +527,26 @@ function tieneTarjeta(dni, callback) {
   });
   connection.execSql(request);
 };
+
+function isHabilitado(nroTarjeta, dineroGastado, callback) { //Chequea si el monto no supera el limite de la tarjeta
+  const statement = "UPDATE Tarjetas SET dineroGastado += @dineroGastado OUTPUT @@ROWCOUNT as rta WHERE nroTarjeta = @nroTarjeta AND dineroGastado+@dineroGastado <= limite"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
+  request.addParameter('dineroGastado', TYPES.Float, dineroGastado);
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
+    if (results == '') return callback(false); //SALDO INSUFICIENTE
+    else {
+      return callback(true); //SALDO SUFICIENTE
+    }
+  });
+  connection.execSql(request);
+}
