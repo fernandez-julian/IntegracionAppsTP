@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import faker from 'faker'
 import React, { Component } from 'react'
 import { Grid, Header, Segment, Container, Table, Input, Button, Popup, Confirm } from 'semantic-ui-react'
 import ModalEdit from '../../components/ModalEditEstablecimiento'

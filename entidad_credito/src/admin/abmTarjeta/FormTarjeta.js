@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Input, TextArea, Button, Select, Container, Header, Icon, Segment, Message, Confirm } from 'semantic-ui-react';
+import { Form, Button, Container, Header, Icon, Segment, Confirm } from 'semantic-ui-react';
 import SnackBar from '../../components/SnackBar';
 
 

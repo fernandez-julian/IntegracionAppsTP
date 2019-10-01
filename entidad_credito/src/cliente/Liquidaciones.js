@@ -1,7 +1,6 @@
 import React, { Component } from "react";
 import { Table, Container, Statistic, Segment, Dropdown, Icon } from 'semantic-ui-react';
 import _ from 'lodash';
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const tableData = [
@@ -89,7 +88,7 @@ class Liquidaciones extends Component {
           if(this.state.movementsExistence){
             var obj = JSON.parse(result);
             var montoMes = obj[obj.length-1];
-            var liq = obj.splice(obj.length-1, 1);
+           // var liq = obj.splice(obj.length-1, 1);
           
             this.setState({ isLoaded: true, liquidaciones: obj, montoTotalMes: montoMes['montoTotal'] })
           }else{

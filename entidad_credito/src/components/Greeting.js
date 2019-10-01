@@ -17,7 +17,7 @@ export default class Greeting extends Component {
   handleClose = () => this.setState({ open: false })
 
   render() {
-    const { open } = this.state;
+    
 
     const defaultOptions = {
       loop: true,

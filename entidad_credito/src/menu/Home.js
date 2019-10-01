@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Grid, Container, Message } from 'semantic-ui-react';
+import { Grid, Container } from 'semantic-ui-react';
 import LogIn from '../logIn/LogIn';
 import SnackBar from '../components/SnackBar';
 
@@ -17,16 +17,13 @@ class Home extends Component {
 
     closeSnackBar = () => this.setState({ openSnackBar: false });
 
-    handleItemClick = (e, { name }) => this.setState({ activeItem: name })
-
     render() {
-        const { activeItem } = this.state;
 
         return (
 
             <Container >
                 <Grid columns={1} divided>
-                    <Grid.Row style={{ marginBottom: 150 }}>{/*Ver porque no puedo crear un objeto con props css*/}
+                    <Grid.Row style={{ marginBottom: 150 }}>
                         <Grid.Column>
 
                         </Grid.Column>
