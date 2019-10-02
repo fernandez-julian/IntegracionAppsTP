@@ -397,13 +397,13 @@ app.use(
 
         res.status(200).json('El proceso de compra se realizo con exito')
       }
-      else {
-        res.status(404).json('Pago rechazado por saldo insuficiente')
+      else {  //Asumo que el nroTarjeta existe
+        res.status(403).json('Pago rechazado por saldo insuficiente')
       }
     })
   }),
 
-  router.post('/entidades/facturar', (req, res) => { //VER EN QUE FECHAS SE FACTURA + QUE PASA SI UNA ENTIDAD NO FACTURA?
+  router.post('/entidades/facturar', (req, res) => { //VER EN QUE FECHAS SE FACTURA
     //const { } = req.body;
     const statement = "SELECT e.idEntidad, e.razonSocial, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio GROUP BY e.idEntidad, e.razonSocial FOR JSON PATH"
     function handleResult(err, numRows, rows) {
@@ -414,7 +414,7 @@ app.use(
     var dt = new Date();
     var anio = dt.getFullYear();
     var mes = dt.getMonth();
-    request.addParameter('mes', TYPES.Int, mes);
+    request.addParameter('mes', TYPES.Int, 4);
     request.addParameter('anio', TYPES.Int, anio);
     request.on('row', function (columns) {
       columns.forEach(function (column) {
@@ -422,8 +422,8 @@ app.use(
       });
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-      if (results == '') {
-        //SI NO HAY PAGOS A ENTIDADES EN ESE MES QUE SE HACE?
+      if (results == '') { 
+        res.status(404).json('No hay entidades a las que pagar');
       }
       else {
         res.json(results);
