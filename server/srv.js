@@ -414,7 +414,7 @@ app.use(
     var dt = new Date();
     var anio = dt.getFullYear();
     var mes = dt.getMonth();
-    request.addParameter('mes', TYPES.Int, 4);
+    request.addParameter('mes', TYPES.Int, mes);
     request.addParameter('anio', TYPES.Int, anio);
     request.on('row', function (columns) {
       columns.forEach(function (column) {
@@ -423,7 +423,7 @@ app.use(
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
       if (results == '') { 
-        res.status(404).json('No hay entidades a las que pagar');
+        res.status(404).json('No hay entidades a las que facturar');
       }
       else {
         res.json(results);
