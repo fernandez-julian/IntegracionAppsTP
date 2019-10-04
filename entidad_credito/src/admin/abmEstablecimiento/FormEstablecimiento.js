@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Input, Button, Container, Header, Icon, Segment, Confirm } from 'semantic-ui-react';
+import { Form, Input, Button, Container, Header, Icon, Segment, Confirm, Checkbox } from 'semantic-ui-react';
 import SnackBar from '../../components/SnackBar';
 
 
@@ -13,6 +13,9 @@ class FromEstablecimiento extends Component {
         razonSocial: '',
         direccion: '',
         telefono: '',
+        cbu: '',
+
+        checkBoxCbu: '',
     };
 
     resetForm = () => {
@@ -39,6 +42,12 @@ class FromEstablecimiento extends Component {
         });
     }
 
+    handleCheckBox = () => {
+        this.state.checkBoxCbu === ''
+            ? this.setState({ checkBoxCbu: 'check' })
+            : this.setState({ checkBoxCbu: '' })
+    };
+
     onSubmit = () => this.openConfirm();
 
     createEst = event => {
@@ -47,6 +56,7 @@ class FromEstablecimiento extends Component {
         requestBody.razonSocial = this.state.razonSocial;
         requestBody.direccion = this.state.direccion;
         requestBody.telefono = this.state.telefono;
+        requestBody.cbu = this.state.cbu;
         fetch('/entidades/registrar', {
 
             method: "POST",
@@ -98,19 +108,21 @@ class FromEstablecimiento extends Component {
                             />
                         </Form.Group>
                         <Form.Group widths='equal'>
+                            <Checkbox
+                                style={{marginLeft:'10px'}}
+                                label='CBU'
+                                name='checkBoxCbu'
+                                checked={this.state.checkBoxCbu === 'check'}
+                                onChange={this.handleCheckBox}
+                            />
+                            {this.state.checkBoxCbu === 'check'
+                                ? <Form.Input
+                                    name='cbu'
+                                    onChange={this.handleInputs}
+                                />
+                                : null}
+
                         </Form.Group>
-                        {/* <Form.Field
-                        id='form-textarea-control-opinion'
-                        control={TextArea}
-                        label='Opinion'
-                        placeholder='Opinion'
-                        />
-                        <Form.Field
-                        id='form-button-control-public'
-                        control={Button}
-                        content='Confirm'
-                        label='Label with htmlFor'
-                    />*/}
                         <Button.Group>
                             <Button onClick={this.resetForm}>Cancelar</Button>
                             <Button.Or />

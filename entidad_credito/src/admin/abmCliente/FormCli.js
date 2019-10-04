@@ -1,5 +1,5 @@
 import React, { Component } from "react";
-import { Form, Button, Container, Header, Icon, Segment, Confirm } from 'semantic-ui-react';
+import { Form, Button, Container, Header, Icon, Segment, Confirm, Checkbox } from 'semantic-ui-react';
 import SnackBar from '../../components/SnackBar';
 
 
@@ -16,6 +16,9 @@ class FromCli extends Component {
         telefono: '',
         mail: '',
         clave: '',
+        cbu: '',
+
+        checkBoxCbu: '',
     };
 
     resetForm = () => {
@@ -38,6 +41,12 @@ class FromCli extends Component {
         });
     };
 
+    handleCheckBox = () => {
+        this.state.checkBoxCbu === ''
+            ? this.setState({ checkBoxCbu: 'check' })
+            : this.setState({ checkBoxCbu: '' })
+    };
+
     createCli = event => {
         this.closeConfirm();
         let requestBody = {};
@@ -46,6 +55,7 @@ class FromCli extends Component {
         requestBody.dni = this.state.dni;
         requestBody.telefono = this.state.telefono;
         requestBody.mail = this.state.mail;
+        requestBody.cbu = this.state.cbu;
         fetch('/clientes/registrar', {
 
             method: "POST",
@@ -106,6 +116,22 @@ class FromCli extends Component {
                                 placeholder='Email@...' required
                                 onChange={this.handleInputs}
                             />
+                        </Form.Group>
+                        <Form.Group widths='equal'>
+                            <Checkbox
+                                style={{marginLeft:'10px'}}
+                                label='CBU'
+                                name='checkBoxCbu'
+                                checked={this.state.checkBoxCbu === 'check'}
+                                onChange={this.handleCheckBox}
+                            />
+                            {this.state.checkBoxCbu === 'check'
+                                ? <Form.Input
+                                    name='cbu'
+                                    onChange={this.handleInputs}
+                                />
+                                : null}
+
                         </Form.Group>
                         <Button.Group>
                             <Button onClick={this.resetForm}>Cancelar</Button>
