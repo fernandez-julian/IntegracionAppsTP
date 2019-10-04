@@ -93,8 +93,7 @@ class Liquidaciones extends Component {
               var intereses = obj[obj.length - 2];
               var total = obj[obj.length - 1];
               obj.splice(obj.length - 3, 3);
-
-              this.setState({ isLoaded: true, liquidaciones: obj, subtotal: subtotal['montoTotal'], intereses: intereses['intereses'], total: total['total'] })
+              this.setState({ isLoaded: true, liquidaciones: obj, subtotal: subtotal['subtotal'], intereses: intereses['intereses'], total: total['total'] })
             } else {
               this.setState({ errorMessageExistence: result, subtotal: null, intereses: null, total: null, liquidaciones: [] })
             }
