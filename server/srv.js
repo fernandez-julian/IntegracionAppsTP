@@ -43,6 +43,7 @@ app.listen(app.get('port'), () => {
 
 var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
+var cbuEntidadCredito = '';
 
 app.use(
   router.post('/log', (req, res) => {
@@ -340,10 +341,16 @@ app.use(
 
           const reducer = (accumulator, currentValue) => accumulator + currentValue;
           var amountobj = obj.map((item) => { return item['monto'] });
-          var totalAmountobj = amountobj.reduce(reducer);
+          var subtotalobj = amountobj.reduce(reducer);
+          var interes = subtotalobj * 0.03;
+          var total = interes + subtotalobj;
 
-          var totalAmountobjJSON = { "montoTotal": totalAmountobj };
-          obj.push(totalAmountobjJSON);
+          var subtotalobjJSON = { "subtotal": subtotalobj };
+          var interesJSON = { "intereses": interes };
+          var totalJSON = {"total" : total}
+          obj.push(subtotalobjJSON);
+          obj.push(interesJSON);
+          obj.push(totalJSON);
           var response = JSON.stringify(obj);
           res.json(response);
         }

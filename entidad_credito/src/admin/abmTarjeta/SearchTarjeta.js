@@ -27,25 +27,25 @@ export default class SearchTarjeta extends Component {
 
   componentDidMount() {
     fetch('/tarjetas/obtener')
-    .then(response => {
-      if (response.status === 200) {
-        this.setState({ cardExistence: true })
-        return response.json();
-      }
-      else {
-        this.setState({ cardExistence: false})
-        return response.json();
-      }
-    })
+      .then(response => {
+        if (response.status === 200) {
+          this.setState({ cardExistence: true })
+          return response.json();
+        }
+        else {
+          this.setState({ cardExistence: false })
+          return response.json();
+        }
+      })
       .then(
         (result) => {
           this.state.cardExistence
-          ? this.setState({
-            isLoaded: true,
-            tarjetas: JSON.parse(result),
-            results: JSON.parse(result),
-          })
-          : this.setState({ errorMessageExistence: result})
+            ? this.setState({
+              isLoaded: true,
+              tarjetas: JSON.parse(result),
+              results: JSON.parse(result),
+            })
+            : this.setState({ errorMessageExistence: result })
         })
   }
 
@@ -138,17 +138,17 @@ export default class SearchTarjeta extends Component {
         'Content-Type': 'application/json'
       }),
     })
-    .then(this.setState({ results: this.state.tarjetas, openConfirm: false, toDelete: null}));
+      .then(this.setState({ results: this.state.tarjetas, openConfirm: false, toDelete: null }));
   };
 
-openConfirm = (item) => {
-  this.setState({toDelete: item, openConfirm: true});
-};
+  openConfirm = (item) => {
+    this.setState({ toDelete: item, openConfirm: true });
+  };
 
-closeConfirm = () => {
-  this.setState({openConfirm: false, toDelete: null});
+  closeConfirm = () => {
+    this.setState({ openConfirm: false, toDelete: null });
 
-};
+  };
 
   render() {
     const { errorMessageExistence, isLoaded, isLoading, value, results } = this.state;
@@ -160,61 +160,67 @@ closeConfirm = () => {
       return (
         <Container>
           <Grid>
-            <Grid.Column width={6}>
-              <Input
-                loading={isLoading}
-                icon={isLoading ? '' : 'search'}
-                onChange={_.debounce(this.handleSearchChange, 500, {
-                  leading: true,
-                })}
-                value={value}
-                placeholder='Buscar por dni cliente'
-              />
-            </Grid.Column>
-            <Grid.Column width={10}>
-              <Segment>
-                <Header>Tarjetas registradas</Header>
-                <Table color={'olive'} celled selectable>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.HeaderCell>Numero Tarjeta</Table.HeaderCell>
-                      <Table.HeaderCell>Limite</Table.HeaderCell>
-                      <Table.HeaderCell>Dinero Gastado</Table.HeaderCell>
-                      <Table.HeaderCell>Fecha Vencimiento</Table.HeaderCell>
-                      <Table.HeaderCell>Código Seguridad</Table.HeaderCell>
-                      <Table.HeaderCell>DNI Asociado</Table.HeaderCell>
-                      <Table.HeaderCell />
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-
-                    {results.map(item => (
+            <Grid.Row>
+              <Grid.Column width={4}>
+                <Input
+                  loading={isLoading}
+                  icon={isLoading ? '' : 'search'}
+                  onChange={_.debounce(this.handleSearchChange, 500, {
+                    leading: true,
+                  })}
+                  value={value}
+                  placeholder='Buscar por dni cliente'
+                />
+              </Grid.Column>
+            </Grid.Row>
+            <Grid.Row>
+              <Grid.Column>
+                <Segment>
+                  <Header>Tarjetas registradas</Header>
+                  <Table color={'olive'} celled selectable>
+                    <Table.Header>
                       <Table.Row>
-                        <Table.Cell>{item.nroTarjeta}</Table.Cell>
-                        <Table.Cell>{item.limite}</Table.Cell>
-                        <Table.Cell>{item.dineroGastado}</Table.Cell>
-                        <Table.Cell>{item.fechaVto}</Table.Cell>
-                        <Table.Cell>{item.codSeg}</Table.Cell>
-                        <Table.Cell>{item.dni}</Table.Cell>
-                        <Table.Cell textAlign='center'>
-                          <Popup
-                            content='Editar'
-                            trigger={<Button color='green' icon='edit' size='mini'
-                              onClick={() => this.handleEdit(item)} />}
-                          />
-                          <Popup
-                            content='Eliminar'
-                            trigger={<Button color='red' icon='trash alternate outline' size='mini'
-                              onClick={() => this.openConfirm(item)} />}
-                          />
-                        </Table.Cell>
+                        <Table.HeaderCell>Numero Tarjeta</Table.HeaderCell>
+                        <Table.HeaderCell>Limite</Table.HeaderCell>
+                        <Table.HeaderCell>Dinero Gastado</Table.HeaderCell>
+                        <Table.HeaderCell>Fecha Vencimiento</Table.HeaderCell>
+                        <Table.HeaderCell>Código Seguridad</Table.HeaderCell>
+                        <Table.HeaderCell>DNI Asociado</Table.HeaderCell>
+                        <Table.HeaderCell />
                       </Table.Row>
-                    ))}
+                    </Table.Header>
+                    <Table.Body>
 
-                  </Table.Body>
-                </Table>
-              </Segment>
-            </Grid.Column>
+                      {results.map(item => (
+                        <Table.Row>
+                          <Table.Cell>{item.nroTarjeta}</Table.Cell>
+                          <Table.Cell>{item.limite}</Table.Cell>
+                          <Table.Cell>{item.dineroGastado}</Table.Cell>
+                          <Table.Cell>{item.fechaVto}</Table.Cell>
+                          <Table.Cell>{item.codSeg}</Table.Cell>
+                          <Table.Cell>{item.dni}</Table.Cell>
+                          <Table.Cell textAlign='center'>
+                            <Popup
+                              content='Editar'
+                              trigger={<Button color='green' icon='edit' size='mini'
+                                onClick={() => this.handleEdit(item)} />}
+                            />
+                            <Popup
+                              content='Eliminar'
+                              trigger={<Button color='red' icon='trash alternate outline' size='mini'
+                                onClick={() => this.openConfirm(item)} />}
+                            />
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+
+                    </Table.Body>
+                  </Table>
+                </Segment>
+              </Grid.Column>
+            </Grid.Row>
+
+
           </Grid>
           <ModalEdit
             open={this.state.modalEdit}
@@ -224,12 +230,12 @@ closeConfirm = () => {
             successEdit={this.state.successEdit}
           />
           <Confirm
-          open={this.state.openConfirm}
-          onCancel={this.closeConfirm}
-          onConfirm={this.handleDelete}
-          content='¿Desea confirmar la baja de la tarjeta?'
-          cancelButton='Cancelar'
-          confirmButton="Confirmar"
+            open={this.state.openConfirm}
+            onCancel={this.closeConfirm}
+            onConfirm={this.handleDelete}
+            content='¿Desea confirmar la baja de la tarjeta?'
+            cancelButton='Cancelar'
+            confirmButton="Confirmar"
           />
         </Container>
       );

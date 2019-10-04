@@ -105,7 +105,8 @@ export default class SearchCli extends Component {
       return (
         <Container>
           <Grid>
-            <Grid.Column width={6}>
+            <Grid.Row>
+            <Grid.Column width={4}>
               <Input
                 loading={isLoading}
                 icon={isLoading ? '' : 'search'}
@@ -116,7 +117,9 @@ export default class SearchCli extends Component {
                 placeholder='Buscar por mail'
               />
             </Grid.Column>
-            <Grid.Column width={10}>
+            </Grid.Row>
+            <Grid.Row>
+            <Grid.Column>
               <Segment>
                 <Header>Clientes registrados</Header>
                 <Table color={'olive'} celled selectable>
@@ -128,6 +131,7 @@ export default class SearchCli extends Component {
                       <Table.HeaderCell>DNI</Table.HeaderCell>
                       <Table.HeaderCell>Telefono</Table.HeaderCell>
                       <Table.HeaderCell>Mail</Table.HeaderCell>
+                      <Table.HeaderCell>Clave Bancaria unica</Table.HeaderCell>
                       <Table.HeaderCell />
                     </Table.Row>
                   </Table.Header>
@@ -141,6 +145,7 @@ export default class SearchCli extends Component {
                         <Table.Cell>{item.dni}</Table.Cell>
                         <Table.Cell>{item.telefono}</Table.Cell>
                         <Table.Cell>{item.mail}</Table.Cell>
+                        <Table.Cell>{item.cbu}</Table.Cell>
                         <Table.Cell textAlign='center'>
                         <Popup
                             content='Eliminar'
@@ -154,6 +159,9 @@ export default class SearchCli extends Component {
                 </Table>
               </Segment>
             </Grid.Column>
+            </Grid.Row>
+            
+            
           </Grid>
           <Confirm
           open={this.state.openConfirm}

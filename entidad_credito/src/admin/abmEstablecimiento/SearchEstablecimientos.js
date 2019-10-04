@@ -35,7 +35,7 @@ export default class SearchEstablecimientos extends Component {
           return response.json();
         }
         else {
-          this.setState({ entidadesExistence: false})
+          this.setState({ entidadesExistence: false })
           return response.json();
         }
       })
@@ -49,7 +49,7 @@ export default class SearchEstablecimientos extends Component {
             })
             : this.setState({ errorMessageExistence: result })
         })
-      }
+  }
 
   handleResultSelect = (e, { result }) => {
     this.setState({ value: result.razonSocial });
@@ -150,15 +150,15 @@ export default class SearchEstablecimientos extends Component {
       headers: new Headers({
         'Content-Type': 'application/json'
       }),
-    }).then(this.setState({ results: this.state.establecimientos, openConfirm: false, toDelete: null}));
+    }).then(this.setState({ results: this.state.establecimientos, openConfirm: false, toDelete: null }));
   };
 
   openConfirm = (item) => {
-    this.setState({toDelete: item, openConfirm: true});
+    this.setState({ toDelete: item, openConfirm: true });
   };
 
   closeConfirm = () => {
-    this.setState({openConfirm: false, toDelete: null});
+    this.setState({ openConfirm: false, toDelete: null });
 
   };
 
@@ -172,55 +172,62 @@ export default class SearchEstablecimientos extends Component {
       return (
         <Container>
           <Grid>
-            <Grid.Column width={6}>
-              <Input
-                loading={isLoading}
-                icon={isLoading ? '' : 'search'}
-                onChange={_.debounce(this.handleSearchChange, 500, {
-                  leading: true,
-                })}
-                value={value}
-                placeholder='Buscar por razón social'
-              />
-            </Grid.Column>
-            <Grid.Column width={10}>
-              <Segment>
-                <Header>Establecimientos registrados</Header>
-                <Table color={'olive'} celled selectable>
-                  <Table.Header>
-                    <Table.Row>
-                      <Table.HeaderCell>Razón Social</Table.HeaderCell>
-                      <Table.HeaderCell>Direccion</Table.HeaderCell>
-                      <Table.HeaderCell>Telefono</Table.HeaderCell>
-                      <Table.HeaderCell />
-                    </Table.Row>
-                  </Table.Header>
-                  <Table.Body>
-
-                    {results.map(item => (
-                      <Table.Row key={item.idEntidad}>
-                        <Table.Cell>{item.razonSocial}</Table.Cell>
-                        <Table.Cell>{item.direccion}</Table.Cell>
-                        <Table.Cell>{item.telefono}</Table.Cell>
-                        <Table.Cell textAlign='center'>
-                          <Popup
-                            content='Editar'
-                            trigger={<Button color='green' icon='edit' size='mini'
-                              onClick={() => this.handleEdit(item)} />}
-                          />
-                          <Popup
-                            content='Eliminar'
-                            trigger={<Button color='red' icon='trash alternate outline' size='mini'
-                              onClick={() => this.openConfirm(item)} />}
-                          />
-                        </Table.Cell>
+            <Grid.Row>
+              <Grid.Column width={4}>
+                <Input
+                  loading={isLoading}
+                  icon={isLoading ? '' : 'search'}
+                  onChange={_.debounce(this.handleSearchChange, 500, {
+                    leading: true,
+                  })}
+                  value={value}
+                  placeholder='Buscar por razón social'
+                />
+              </Grid.Column>
+            </Grid.Row>
+            <Grid.Row>
+              <Grid.Column>
+                <Segment>
+                  <Header>Establecimientos registrados</Header>
+                  <Table color={'olive'} celled selectable>
+                    <Table.Header>
+                      <Table.Row>
+                        <Table.HeaderCell>Razón Social</Table.HeaderCell>
+                        <Table.HeaderCell>Direccion</Table.HeaderCell>
+                        <Table.HeaderCell>Telefono</Table.HeaderCell>
+                        <Table.HeaderCell>Clave Bancaria unica</Table.HeaderCell>
+                        <Table.HeaderCell />
                       </Table.Row>
-                    ))}
+                    </Table.Header>
+                    <Table.Body>
 
-                  </Table.Body>
-                </Table>
-              </Segment>
-            </Grid.Column>
+                      {results.map(item => (
+                        <Table.Row key={item.idEntidad}>
+                          <Table.Cell>{item.razonSocial}</Table.Cell>
+                          <Table.Cell>{item.direccion}</Table.Cell>
+                          <Table.Cell>{item.telefono}</Table.Cell>
+                          <Table.Cell>{item.cbu}</Table.Cell>
+                          <Table.Cell textAlign='center'>
+                            <Popup
+                              content='Editar'
+                              trigger={<Button color='green' icon='edit' size='mini'
+                                onClick={() => this.handleEdit(item)} />}
+                            />
+                            <Popup
+                              content='Eliminar'
+                              trigger={<Button color='red' icon='trash alternate outline' size='mini'
+                                onClick={() => this.openConfirm(item)} />}
+                            />
+                          </Table.Cell>
+                        </Table.Row>
+                      ))}
+
+                    </Table.Body>
+                  </Table>
+                </Segment>
+              </Grid.Column>
+            </Grid.Row>
+
           </Grid>
           <ModalEdit
             open={this.state.modalEdit}
@@ -231,12 +238,12 @@ export default class SearchEstablecimientos extends Component {
           />
 
           <Confirm
-          open={this.state.openConfirm}
-          onCancel={this.closeConfirm}
-          onConfirm={this.handleDelete}
-          content='¿Desea confirmar la baja del establecimiento?'
-          cancelButton='Cancelar'
-          confirmButton="Confirmar"
+            open={this.state.openConfirm}
+            onCancel={this.closeConfirm}
+            onConfirm={this.handleDelete}
+            content='¿Desea confirmar la baja del establecimiento?'
+            cancelButton='Cancelar'
+            confirmButton="Confirmar"
           />
         </Container>
       );

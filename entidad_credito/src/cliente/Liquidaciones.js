@@ -20,7 +20,9 @@ class Liquidaciones extends Component {
 
     isLoaded: true,
     liquidaciones: [],
-    montoTotalMes:null,
+    subtotal: null,
+    intereses: null,
+    total: null,
     errorMessageExistence: null,
 
     movementsExistence: false,
@@ -61,47 +63,47 @@ class Liquidaciones extends Component {
   };
 
   handleChange = (e, { value }) => {
-    if(value !== ''){
-    this.setState({isLoaded: false, errorMessageExistence: null})
-    let requestBody = {};
-    requestBody.dni = this.props.cli[0]['dni'];
-    requestBody.mes = value;
-    fetch('/movimientos/obtener', {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: new Headers({
-        'Content-Type': 'application/json'
-      }),
-    })
-      .then(response => {
-        if (response.status === 200) {
-          this.setState({ movementsExistence: true })
-          return response.json();
-        }
-        else {
-          this.setState({ movementsExistence: false })
-          return response.json();
-        }
+    if (value !== '') {
+      this.setState({ isLoaded: false, errorMessageExistence: null })
+      let requestBody = {};
+      requestBody.dni = this.props.cli[0]['dni'];
+      requestBody.mes = value;
+      fetch('/movimientos/obtener', {
+        method: "POST",
+        body: JSON.stringify(requestBody),
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
       })
-      .then(
-        (result) => {
-          if(this.state.movementsExistence){
-            var obj = JSON.parse(result);
-            var montoMes = obj[obj.length-1];
-           // var liq = obj.splice(obj.length-1, 1);
-          
-            this.setState({ isLoaded: true, liquidaciones: obj, montoTotalMes: montoMes['montoTotal'] })
-          }else{
-            this.setState({ errorMessageExistence: result, montoTotalMes:null, liquidaciones: [] })
+        .then(response => {
+          if (response.status === 200) {
+            this.setState({ movementsExistence: true })
+            return response.json();
           }
-            console.log(this.state.liquidaciones)
-            console.log(this.state.montoTotalMes)
+          else {
+            this.setState({ movementsExistence: false })
+            return response.json();
+          }
         })
-      }
+        .then(
+          (result) => {
+            if (this.state.movementsExistence) {
+              var obj = JSON.parse(result);
+              var subtotal = obj[obj.length - 3];
+              var intereses = obj[obj.length - 2];
+              var total = obj[obj.length - 1];
+              obj.splice(obj.length - 3, 3);
+
+              this.setState({ isLoaded: true, liquidaciones: obj, subtotal: subtotal['montoTotal'], intereses: intereses['intereses'], total: total['total'] })
+            } else {
+              this.setState({ errorMessageExistence: result, subtotal: null, intereses: null, total: null, liquidaciones: [] })
+            }
+          })
+    }
   }
 
   render() {
-    const { column, direction, liquidaciones, errorMessageExistence, isLoaded, montoTotalMes } = this.state;
+    const { column, direction, liquidaciones, errorMessageExistence, isLoaded, subtotal, intereses, total } = this.state;
     const options = [
       { key: 1, text: 'Enero', value: 1 },
       { key: 2, text: 'Febrero', value: 2 },
@@ -117,73 +119,81 @@ class Liquidaciones extends Component {
       { key: 12, text: 'Diciembre', value: 12 },
     ]
 
-      return (
-        <Container>
-          <Segment>
-            <Statistic.Group>
+    return (
+      <Container>
+        <Segment>
+          <Statistic.Group>
             <Statistic>
-                <Statistic.Value>{liquidaciones.length}</Statistic.Value>
-                <Statistic.Label>Movimientos</Statistic.Label>
-              </Statistic>
-              <Statistic>
-                <Statistic.Value><Icon name='dollar sign'/>{montoTotalMes}</Statistic.Value>
-                <Statistic.Label>LIQUIDADO</Statistic.Label>
-              </Statistic>
-            </Statistic.Group>
-          </Segment>
+              <Statistic.Value>{liquidaciones.length}</Statistic.Value>
+              <Statistic.Label>Movimientos</Statistic.Label>
+            </Statistic>
+            <Statistic>
+              <Statistic.Value><Icon name='dollar sign' />{subtotal}</Statistic.Value>
+              <Statistic.Label>SUBTOTAL</Statistic.Label>
+            </Statistic>
+            <Statistic>
+              <Statistic.Value><Icon name='dollar sign' />{intereses}</Statistic.Value>
+              <Statistic.Label>INTERESES</Statistic.Label>
+            </Statistic>
+            <Statistic>
+              <Statistic.Value><Icon name='dollar sign' />{total}</Statistic.Value>
+              <Statistic.Label>TOTAL</Statistic.Label>
+            </Statistic>
+          </Statistic.Group>
+        </Segment>
 
-          <Segment>
-            <Dropdown clearable options={options} selection onChange={this.handleChange}/>
-          </Segment>
+        <Segment>
+          <Dropdown clearable options={options} selection onChange={this.handleChange} />
+        </Segment>
 
-          {
-            errorMessageExistence
+        {
+          errorMessageExistence
             ? <div>{errorMessageExistence}</div>
-            :!isLoaded
-              ?<div> Cargando ... </div>
-              :<Segment>
-            <Table sortable celled fixed>
-              <Table.Header>
-                <Table.Row>
-                  <Table.HeaderCell
-                    sorted={column === 'fecha' ? direction : null}
-                    onClick={this.handleSort('fecha')}
-                  >
-                    Fecha
+            : !isLoaded
+              ? <div> Cargando ... </div>
+              : <Segment>
+                <Table sortable celled fixed>
+                  <Table.Header>
+                    <Table.Row>
+                      <Table.HeaderCell
+                        sorted={column === 'fecha' ? direction : null}
+                        onClick={this.handleSort('fecha')}
+                      >
+                        Fecha
                       </Table.HeaderCell>
-                  <Table.HeaderCell
-                    sorted={column === 'razonSocial' ? direction : null}
-                    onClick={this.handleSort('razonSocial')}
-                  >
-                    Razon social
+                      <Table.HeaderCell
+                        sorted={column === 'razonSocial' ? direction : null}
+                        onClick={this.handleSort('razonSocial')}
+                      >
+                        Razon social
                       </Table.HeaderCell>
-                  <Table.HeaderCell
-                    sorted={column === 'monto' ? direction : null}
-                    onClick={this.handleSort('monto')}
-                  >
-                    Monto
+                      <Table.HeaderCell
+                        sorted={column === 'monto' ? direction : null}
+                        onClick={this.handleSort('monto')}
+                      >
+                        Monto
                       </Table.HeaderCell>
-                </Table.Row>
-              </Table.Header>
-              <Table.Body>
-                {liquidaciones.map(item => (
-                  <Table.Row>
-                    <Table.Cell>{item.fecha}</Table.Cell>
-                    <Table.Cell>{item.razonSocial}</Table.Cell>
-                    <Table.Cell>$ {item.monto}</Table.Cell>
-                  </Table.Row>
-                ))}
-              </Table.Body>
-            </Table>
-          </Segment>
-          }
+                    </Table.Row>
+                  </Table.Header>
+                  <Table.Body>
+                    {liquidaciones.map(item => (
+                      <Table.Row>
+                        <Table.Cell>{item.fecha}</Table.Cell>
+                        <Table.Cell>{item.razonSocial}</Table.Cell>
+                        <Table.Cell>$ {item.monto}</Table.Cell>
+                      </Table.Row>
+                    ))}
+                  </Table.Body>
+                </Table>
+              </Segment>
+        }
 
-        </Container>
+      </Container>
 
 
-      );
-    }
+    );
   }
+}
 
 
-    export default Liquidaciones
+export default Liquidaciones
