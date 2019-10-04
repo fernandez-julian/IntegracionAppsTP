@@ -144,8 +144,8 @@ app.use(
   }),
 
   router.post('/entidades/registrar', (req, res) => {
-    const { razonSocial, direccion, telefono } = req.body;
-    request = new Request("INSERT INTO Entidades (razonSocial, direccion, telefono) values (@razonSocial, @direccion, @telefono)", function (err) {
+    const { razonSocial, direccion, telefono, cbu } = req.body;
+    request = new Request("INSERT INTO Entidades (razonSocial, direccion, telefono, cbu) values (@razonSocial, @direccion, @telefono, @cbu)", function (err) {
       if (err) {
         console.log(err);
       }
@@ -153,7 +153,7 @@ app.use(
     request.addParameter('razonSocial', TYPES.NVarChar, razonSocial);
     request.addParameter('direccion', TYPES.NVarChar, direccion);
     request.addParameter('telefono', TYPES.NVarChar, telefono);
-
+    request.addParameter('cbu', TYPES.NVarChar, cbu);
     connection.execSql(request);
   }),
 
@@ -577,7 +577,7 @@ function existeTarjetaConCodigo(nroTarjeta, codSeg, callback) {
   });
   request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
     if (results == '') return callback(false); //TARJETA O CODIGO ERRONEO
-    else callback(true);
+    else return callback(true);
   });
   connection.execSql(request);
 }
