@@ -72,10 +72,10 @@ app.use(
   }),
 
   router.post('/clientes/registrar', (req, res) => {
-    const { nombre, fechaNac, dni, telefono, mail } = req.body;
+    const { nombre, fechaNac, dni, telefono, mail, cbu } = req.body;
     const passDefault = defaulPass(6); //6 es la long de la pass
     const tipo = 'cliente';
-    request = new Request("INSERT INTO Usuarios (tipo, nombre, passDefault, passPropia, fechaNac, dni, telefono, mail) values (@tipo, @nombre, @passDefault, @passPropia, @fechaNac, @dni, @telefono, @mail)", function (err) {
+    request = new Request("INSERT INTO Usuarios (tipo, nombre, passDefault, passPropia, fechaNac, dni, telefono, mail, cbu) values (@tipo, @nombre, @passDefault, @passPropia, @fechaNac, @dni, @telefono, @mail, @cbu)", function (err) {
       if (err) {
         console.log(err);
       }
@@ -88,6 +88,7 @@ app.use(
     request.addParameter('dni', TYPES.Int, dni);
     request.addParameter('telefono', TYPES.Int, telefono);
     request.addParameter('mail', TYPES.NVarChar, mail);
+    request.addParameter('cbu', TYPES.NVarChar, cbu);
     connection.execSql(request);
     // res.writeHead(200, {'Content-Type': 'application/json'});
     res.json({ clave: passDefault });
@@ -377,35 +378,44 @@ app.use(
   }),
 
   router.post('/movimientos/registrar', (req, res) => {
-    const { nroTarjeta, monto, idEntidad } = req.body;
+    const { nroTarjeta, codSeg, monto, idEntidad } = req.body;
+    var existe;
     var habilitado;
-    isHabilitado(nroTarjeta, monto, function (result) {
-      habilitado = result;
-      if (habilitado) {
-        request = new Request("INSERT INTO Movimientos (fecha, monto, idEntidad, nroTarjeta) values (@fecha, @monto, @idEntidad, @nroTarjeta)", function (err) {
-          if (err) {
-            console.log(err);
+    existeTarjetaConCodigo(nroTarjeta, codSeg, function (result) {
+      existe = result;
+      if (existe) {
+        isHabilitado(nroTarjeta, monto, function (result) {
+          habilitado = result;
+          if (habilitado) {
+            request = new Request("INSERT INTO Movimientos (fecha, monto, idEntidad, nroTarjeta) values (@fecha, @monto, @idEntidad, @nroTarjeta)", function (err) {
+              if (err) {
+                console.log(err);
+              }
+            });
+            var fechaHoy = new Date();
+            request.addParameter('fecha', TYPES.Date, fechaHoy);
+            request.addParameter('monto', TYPES.Float, monto);
+            request.addParameter('idEntidad', TYPES.Int, idEntidad);
+            request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
+
+            connection.execSql(request);
+
+            res.status(200).json('El proceso de compra se realizo con exito')
           }
-        });
-        var fechaHoy = new Date();
-        request.addParameter('fecha', TYPES.Date, fechaHoy);
-        request.addParameter('monto', TYPES.Float, monto);
-        request.addParameter('idEntidad', TYPES.Int, idEntidad);
-        request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
-
-        connection.execSql(request);
-
-        res.status(200).json('El proceso de compra se realizo con exito')
+          else {
+            res.status(403).json('Pago rechazado por saldo insuficiente')
+          }
+        })
       }
-      else {  //Asumo que el nroTarjeta existe
-        res.status(403).json('Pago rechazado por saldo insuficiente')
+      else {
+            res.status(404).json('Tarjeta no existente o codigo de seguridad erroneo')
       }
     })
   }),
 
   router.post('/entidades/facturar', (req, res) => { //VER EN QUE FECHAS SE FACTURA
     //const { } = req.body;
-    const statement = "SELECT e.idEntidad, e.razonSocial, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio GROUP BY e.idEntidad, e.razonSocial FOR JSON PATH"
+    const statement = "SELECT e.idEntidad, e.razonSocial, e.cbu, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE MONTH(m.fecha) = @mes AND YEAR(m.fecha) = @anio GROUP BY e.idEntidad, e.razonSocial FOR JSON PATH"
     function handleResult(err, numRows, rows) {
       if (err) return console.error("Error: ", err);
     }
@@ -422,7 +432,7 @@ app.use(
       });
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-      if (results == '') { 
+      if (results == '') {
         res.status(404).json('No hay entidades a las que facturar');
       }
       else {
@@ -547,6 +557,27 @@ function isHabilitado(nroTarjeta, dineroGastado, callback) { //Chequea si el mon
     else {
       return callback(true); //SALDO SUFICIENTE
     }
+  });
+  connection.execSql(request);
+}
+
+function existeTarjetaConCodigo(nroTarjeta, codSeg, callback) {
+  const statement = "SELECT * FROM Tarjetas WHERE nroTarjeta = @nroTarjeta AND codSeg = @codSeg FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
+  request.addParameter('codSeg', TYPES.Int, codSeg);
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
+    if (results == '') return callback(false); //TARJETA O CODIGO ERRONEO
+    else callback(true);
   });
   connection.execSql(request);
 }
