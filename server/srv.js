@@ -4,6 +4,7 @@ var express = require('express');
 var app = express();
 const router = express.Router();
 let tedious = require('tedious');
+var schedule = require('node-schedule');
 
 var config = {
   server: 'localhost',
@@ -43,7 +44,7 @@ app.listen(app.get('port'), () => {
 
 var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
-var cbuEntidadCredito = '';
+var cbuEntidadCredito = '123';//Esta es de prueba--------> pedir la real
 
 app.use(
   router.post('/log', (req, res) => {
@@ -520,6 +521,7 @@ app.use(
       }
     });
   }),
+
 )
 
 function defaulPass(long) {
@@ -694,3 +696,45 @@ function resetDineroGastadoForAllClientes() { //PARA TODOS LOS CLIENTES EN TODOS
   });
   connection.execSql(request);
 }
+
+var facturarEntidades = schedule.scheduleJob('* * * * *', function () {//Definir despues el intervalo de tiempo -> VER "START" EN DOCUMENTACION NODE SHEDULE
+  const statement = "SELECT e.idEntidad, e.razonSocial, e.cbu as cbuDestino, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fecha BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  var dt = new Date();
+  var anio = dt.getFullYear();
+  var mes = dt.getMonth();
+  request.addParameter('mesPost', TYPES.VarChar, (mes + 1).toString());
+  request.addParameter('mesPrev', TYPES.VarChar, mes.toString());
+  request.addParameter('anio', TYPES.VarChar, anio.toString());
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+    if (results == '') {
+      // res.status(404).json('No hay entidades a las que facturar');
+      console.log('//No hay entidades a las que facturar');
+    }
+    else {
+      var obj = JSON.parse(results)
+      obj.forEach((element) => {
+        element["cbuOrigen"] = cbuEntidadCredito
+        element["descripcion"] = 'Pago mensual a entidad'
+      });
+      fetch('https://bancaservice.azurewebsites.net/api/integration/transferir', {
+        method: "POST",
+        body: JSON.stringify(obj),
+        headers: new Headers({
+          'Content-Type': 'application/json'
+        }),
+      })
+    }
+  });
+  connection.execSql(request);
+});
+
