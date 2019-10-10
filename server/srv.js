@@ -320,7 +320,7 @@ app.use(
     else if (mes < currentDate.getMonth() + 1) {
       var dt = new Date();
       var anio = dt.getFullYear();
-      const statement = "SELECT fecha, monto, razonSocial FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni AND m.fecha BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' FOR JSON PATH"
+      const statement = "SELECT fechaPago, monto, razonSocial, nroCuota, totalCuota FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni AND m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' FOR JSON PATH"
       function handleResult(err, numRows, rows) {
         if (err) return console.error("Error: ", err);
       }
@@ -367,7 +367,7 @@ app.use(
 
   router.post('/movimientos/topCinco', (req, res) => {
     const { dni } = req.body;
-    const statement = "SELECT TOP 5 fecha, monto, razonSocial FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni ORDER BY m.fecha DESC FOR JSON PATH"
+    const statement = "SELECT TOP 5 fechaPago, monto, razonSocial, nroCuota, totalCuota FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni ORDER BY m.fechaPago DESC FOR JSON PATH"
     function handleResult(err, numRows, rows) {
       if (err) return console.error("Error: ", err);
     }
@@ -390,45 +390,6 @@ app.use(
     connection.execSql(request);
   }),
 
-  /* PARA REGISTRAR MOVIMIENTOS SIN CUOTAS
-  router.post('/movimientos/registrar', (req, res) => {
-    const { nroTarjeta, codSeg, monto, idEntidad } = req.body;
-    var existe;
-    var habilitado;
-    existeTarjetaConCodigo(nroTarjeta, codSeg, function (result) {
-      existe = result;
-      if (existe) {
-        isHabilitado(nroTarjeta, monto, function (result) {
-          habilitado = result;
-          if (habilitado) {
-            request = new Request("INSERT INTO Movimientos (fecha, monto, idEntidad, nroTarjeta) values (@fecha, @monto, @idEntidad, @nroTarjeta)", function (err) {
-              if (err) {
-                console.log(err);
-              }
-            });
-            var fechaHoy = new Date();
-            request.addParameter('fecha', TYPES.Date, fechaHoy);
-            request.addParameter('monto', TYPES.Float, monto);
-            request.addParameter('idEntidad', TYPES.Int, idEntidad);
-            request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
-
-            connection.execSql(request);
-
-            res.status(200).json('El proceso de compra se realizo con exito')
-          }
-          else {
-            res.status(403).json('Pago rechazado por saldo insuficiente')
-          }
-        })
-      }
-      else {
-        res.status(404).json('Tarjeta no existente o codigo de seguridad erroneo')
-      }
-    })
-  }),
-  */
-
-  //PARA REGISTRAR MOVIMIENTOS CON CUOTAS -> PERO NO FUNCIONA (en correccion)
   router.post('/movimientos/registrar', (req, res) => {
     var { nroTarjeta, codSeg, monto, idEntidad, cuotas } = req.body;
     var existe;
@@ -436,46 +397,65 @@ app.use(
     existeTarjetaConCodigo(nroTarjeta, codSeg, function (result) {
       existe = result;
       if (existe) {
-        isHabilitado(nroTarjeta, monto, function (result) {
+        isHabilitado(nroTarjeta, monto/cuotas, function (result) {
           habilitado = result;
           if (habilitado) {
-            var totalMes = monto / cuotas;
             var fechaHoy = new Date();
-            var values = [];
-            sumaMes = 1;
-            while (cuotas != 0) {
-              mes = fechaHoy.getMonth() + sumaMes;
-              fechaHoy.setMonth(mes)
-              values.push(
-                [fechaHoy, parseFloat(totalMes), parseInt(idEntidad), nroTarjeta]
-              )
-              console.log('FECHA: ', fechaHoy);
-              cuotas--;
-              sumaMes++;
+            if (cuotas == 1) {
+              request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values (@fechaPago, @monto, @idEntidad, @nroTarjeta, @nroCuota, @totalCuota, @fechaCuota)", function (err) {
+                if (err) {
+                  console.log(err);
+                }
+              });
+              request.addParameter('fechaPago', TYPES.Date, fechaHoy);
+              request.addParameter('monto', TYPES.Float, monto);
+              request.addParameter('idEntidad', TYPES.Int, idEntidad);
+              request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
+              request.addParameter('nroCuota', TYPES.Int, 1);
+              request.addParameter('totalCuota', TYPES.Int, 1);
+              request.addParameter('fechaCuota', TYPES.Date, fechaHoy);
+
+              connection.execSql(request);
             }
-            request = new Request("INSERT INTO Movimientos (fecha, monto, idEntidad, nroTarjeta) VALUES " + [values], function (err) { //(@fecha, @monto, @idEntidad, @nroTarjeta)
-              if (err) {
-                console.log(err);
+            else if (cuotas > 1) {
+              var montoCuota = monto / cuotas;
+              var values = [];
+              var cantCuotas = cuotas;
+              var nroCuota = 1;
+              fechaCuota = new Date();
+              if(fechaHoy.getDate() > 22){
+                fechaCuota.setDate(23);
               }
-            });
-            connection.execSql(request);
-
-            res.status(200).json('El proceso de compra se realizo con exito')
-
+              while (cantCuotas != 0) {
+                values.push(
+                  "( '" + fechaHoy.toLocaleDateString() + "'", montoCuota, idEntidad, nroTarjeta, nroCuota, cuotas, "'" + fechaCuota.toLocaleDateString() + "' )"
+                )
+                nroCuota++;
+                cantCuotas--;
+                fechaCuota.setMonth(fechaCuota.getMonth() + 1);
+              }
+              request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) VALUES " + values , function (err) {
+                if (err) {
+                  console.log(err);
+                }
+              });
+              connection.execSql(request);
+            }
+            res.status(200).json('El proceso de compra se realizo con exito') //NOTIFICAR A LA ENTIDAD
           }
           else {
-            res.status(403).json('Pago rechazado por saldo insuficiente')
+            res.status(403).json('Pago rechazado por saldo insuficiente') //NOTIFICAR A LA ENTIDAD
           }
         })
       }
       else {
-        res.status(404).json('Tarjeta no existente o codigo de seguridad erroneo')
+        res.status(404).json('Tarjeta no existente o codigo de seguridad erroneo') //NOTIFICAR A LA ENTIDAD
       }
     })
   }),
 
   router.post('/entidades/facturar', (req, res) => { //Factura entre dia 22 de cada mes
-    const statement = "SELECT e.idEntidad, e.razonSocial, e.cbu, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fecha BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
+    const statement = "SELECT e.idEntidad, e.razonSocial, e.cbu, SUM(m.monto) as total FROM Movimientos m JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
     function handleResult(err, numRows, rows) {
       if (err) return console.error("Error: ", err);
     }
@@ -665,7 +645,7 @@ function existeTarjetaConCodigo(nroTarjeta, codSeg, callback) {
 }
 
 function getSubtotalForAllClientesWithCBU(callback) {
-  const statement = "SELECT u.cbu, SUM(m.monto) AS subtotal FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Usuarios u ON t.dni = u.dni WHERE t.dni IN (SELECT dni FROM Usuarios WHERE tipo = 'cliente' AND cbu != '') AND m.fecha BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY u.cbu FOR JSON PATH"
+  const statement = "SELECT u.cbu, SUM(m.monto) AS subtotal FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Usuarios u ON t.dni = u.dni WHERE t.dni IN (SELECT dni FROM Usuarios WHERE tipo = 'cliente' AND cbu != '') AND m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY u.cbu FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
@@ -700,7 +680,7 @@ function resetDineroGastadoForAllClientes() { //PARA TODOS LOS CLIENTES EN TODOS
 
 /*var facturarEntidades = schedule.scheduleJob('* * * * *', function () {//Definir despues el intervalo de tiempo -> VER "START" EN DOCUMENTACION NODE SHEDULE
 console.log('ejecutado')
-  const statement = "SELECT e.idEntidad, e.razonSocial, e.cbu as cbuDestino, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fecha BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
+  const statement = "SELECT e.idEntidad, e.razonSocial, e.cbu as cbuDestino, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
@@ -738,4 +718,3 @@ console.log('ejecutado')
   });
   connection.execSql(request);
 });*/
-
