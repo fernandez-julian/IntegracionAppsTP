@@ -2,23 +2,22 @@ import React, { Component } from "react";
 import {
     Container,
     Header,
-    Table,
     Divider,
     Segment,
-    Statistic,
 } from 'semantic-ui-react';
 
 
 class InicioCli extends Component {
     state = {
-        movements: [],
-        movementsExistence: false,
+        limite: null,
+        dineroGastado: null,
+        cardExistence : false,
     };
 
     componentDidMount() {
         let requestBody = {};
         requestBody.dni = this.props.cli[0]['dni'];
-        fetch('/movimientos/topCinco', {
+        fetch('/tarjetas/obtenerPorCliente', {
             method: "POST",
             body: JSON.stringify(requestBody),
             headers: new Headers({
@@ -27,66 +26,30 @@ class InicioCli extends Component {
         })
             .then(response => {
                 if (response.status === 200) {
-                    this.setState({ movementsExistence: true })
+                    this.setState({ cardExistence: true })
                     return response.json();
                 }
                 else {
-                    this.setState({ movementsExistence: false })
+                    this.setState({ cardExistence: false })
                     return response.json();
                 }
             })
             .then(
                 (result) => {
-                    if (this.state.movementsExistence)
-                        this.setState({ movements: JSON.parse(result) })
+                    if (this.state.cardExistence)
+                    this.setState({ limite: result.limite, dineroGastado: result.dineroGastado})
+                    console.log(this.state)
                 })
     };
 
     render() {
-        const { movements, movementsExistence } = this.state;
+        const { limite, dineroGastado, cardExistence } = this.state;
         return (
             <Container>
                 <Segment >
-                    <Header as='h2'>ULTIMOS MOVIMIENTOS</Header>
-                    <Statistic.Group>
-                        <Statistic>
-                            <Statistic.Value>{movements.length}</Statistic.Value>
-                            <Statistic.Label>MOVIMIENTOS</Statistic.Label>
-                        </Statistic>
-                    </Statistic.Group>
-
+                    <Header as='h2'>Limite de la Tarjeta: {limite}</Header>
                     <Divider section />
-
-                    <Statistic.Group>
-                        <Table celled fixed>
-                            <Table.Header>
-                                <Table.Row>
-                                    <Table.HeaderCell>
-                                        Fecha
-                                     </Table.HeaderCell>
-                                    <Table.HeaderCell>
-                                        Razon social
-                                    </Table.HeaderCell>
-                                    <Table.HeaderCell>
-                                        Monto
-                                    </Table.HeaderCell>
-                                </Table.Row>
-                            </Table.Header>
-                            <Table.Body>
-                                {movementsExistence
-                                    ? movements.map(item => (
-                                        <Table.Row>
-                                            <Table.Cell>{item.fecha}</Table.Cell>
-                                            <Table.Cell>{item.razonSocial}</Table.Cell>
-                                            <Table.Cell>$ {item.monto}</Table.Cell>
-                                        </Table.Row>
-                                    ))
-                                    : null
-                                }
-
-                            </Table.Body>
-                        </Table>
-                    </Statistic.Group>
+                    <Header as='h2'>Dinero gastado en mes actual: {dineroGastado}</Header>
                 </Segment>
             </Container>
         );

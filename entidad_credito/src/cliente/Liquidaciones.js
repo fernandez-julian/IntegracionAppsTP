@@ -176,7 +176,7 @@ class Liquidaciones extends Component {
                         sorted={column === 'cuota' ? direction : null}
                         onClick={this.handleSort('cuota')}
                       >
-                        cuota
+                        Cuota
                       </Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>

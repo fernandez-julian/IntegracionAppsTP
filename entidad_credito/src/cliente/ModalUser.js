@@ -11,19 +11,6 @@ import {
     Card,
 } from 'semantic-ui-react';
 
-/*const panes = [
-  { menuItem: 'Detalles', render: () => <Tab.Pane>
-      <p>Nombre:</p>
-      <p> Nombre usr:</p>
-      <p>Sexo:</p>
-      <p>Fecha nacimiento:</p>
-      <p>DNI:</p>
-      <p> Tel:</p>
-      <p>Email:</p>
-  </Tab.Pane> },
-  { menuItem: 'Tarjetas', render: () => <Tab.Pane >Tab 2 Content</Tab.Pane> },
-]*/
-
 class ModalUser extends Component {
 
     state = {
