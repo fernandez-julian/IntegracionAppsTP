@@ -172,14 +172,21 @@ class Liquidaciones extends Component {
                       >
                         Monto
                       </Table.HeaderCell>
+                      <Table.HeaderCell
+                        sorted={column === 'cuota' ? direction : null}
+                        onClick={this.handleSort('cuota')}
+                      >
+                        cuota
+                      </Table.HeaderCell>
                     </Table.Row>
                   </Table.Header>
                   <Table.Body>
                     {liquidaciones.map(item => (
                       <Table.Row>
-                        <Table.Cell>{item.fecha}</Table.Cell>
+                        <Table.Cell>{item.fechaPago}</Table.Cell>
                         <Table.Cell>{item.razonSocial}</Table.Cell>
                         <Table.Cell>$ {item.monto}</Table.Cell>
+                        <Table.Cell>{item.nroCuota}/{item.totalCuota}</Table.Cell>
                       </Table.Row>
                     ))}
                   </Table.Body>
