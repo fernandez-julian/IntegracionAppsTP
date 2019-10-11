@@ -698,9 +698,9 @@ function resetDineroGastadoForAllClientes() { //PARA TODOS LOS CLIENTES EN TODOS
   connection.execSql(request);
 }
 
-/*var facturarEntidades = schedule.scheduleJob('* * * * *', function () {//Definir despues el intervalo de tiempo -> VER "START" EN DOCUMENTACION NODE SHEDULE
+var facturarEntidades = schedule.scheduleJob('* * * * *', function () {//Definir despues el intervalo de tiempo -> VER "START" EN DOCUMENTACION NODE SHEDULE
 console.log('ejecutado')
-  const statement = "SELECT e.idEntidad, e.razonSocial, e.cbu as cbuDestino, SUM(m.monto) as total FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fecha BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
+  const statement = "SELECT e.cbu as cbuDestino, SUM(m.monto) as monto FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fecha BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
@@ -725,17 +725,24 @@ console.log('ejecutado')
     else {
       var obj = JSON.parse(results)
       obj.forEach((element) => {
+        //delete element.idEntidad;
+        //delete element.razonSocial;
         element["cbuOrigen"] = cbuEntidadCredito
-        element["descripcion"] = 'Pago mensual a entidad'
+        element["descripcion"] = 'Pago'
+        element["cbuDestino"] = '1230000000101' //sacar de la bd
       });
-      fetch('https://bancaservice.azurewebsites.net/api/integration/transferir', {
+      obj = JSON.stringify(obj);
+      console.log(obj)
+      fetch('https://bancaservice.azurewebsites.net/api/integration/transferir?movimientos=' +
+      //'[{"cbuOrigen":"1100000000000","cbuDestino":"1230000000101","monto":1000,"descripcion":"Pago del banco"}]'
+      obj + '&user=tarjeta01&origenMovimiento=origen1', {
         method: "POST",
-        body: JSON.stringify(obj),
+        body: JSON.stringify(''),
         headers: { 'Content-Type': 'application/json' },
       }).then(res => res.json())
       .then(json => console.log(json));
     }
   });
   connection.execSql(request);
-});*/
+});
 
