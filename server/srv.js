@@ -342,7 +342,6 @@ app.use(
         }
         else {
           var obj = JSON.parse(results)
-
           const reducer = (accumulator, currentValue) => accumulator + currentValue;
           var amountobj = obj.map((item) => { return item['monto'] });
           var subtotalobj = amountobj.reduce(reducer);
@@ -366,9 +365,9 @@ app.use(
     }
   }),
 
-  router.post('/movimientos/topCinco', (req, res) => {
+  router.post('/tarjetas/obtenerPorCliente', (req, res) => {
     const { dni } = req.body;
-    const statement = "SELECT TOP 5 fechaPago, monto, razonSocial, nroCuota, totalCuota FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni ORDER BY m.fechaPago DESC FOR JSON PATH"
+    const statement = "SELECT limite, dineroGastado FROM Tarjetas WHERE dni = @dni FOR JSON PATH"
     function handleResult(err, numRows, rows) {
       if (err) return console.error("Error: ", err);
     }
@@ -382,10 +381,16 @@ app.use(
     });
     request.on('doneProc', function (rowCount, more, returnStatus, rows) {
       if (results == '') {
-        res.status(404).json('No hay movimientos registrados');
+        res.status(404).json('No existe tarjeta para ese cliente');
       }
       else {
-        res.json(results);
+        var obj = JSON.parse(results)
+        obj.forEach(element => {
+          element.limite.toFixed(2);
+          element.dineroGastado.toFixed(2);
+        });
+        var response = JSON.stringify(obj);
+        res.json(response);
       }
     });
     connection.execSql(request);
@@ -424,9 +429,6 @@ app.use(
               var cantCuotas = cuotas;
               var nroCuota = 1;
               fechaCuota = new Date();
-              /*if(fechaHoy.getDate() > 22){
-                fechaCuota.setDate(23);
-              }*/
               while (cantCuotas != 0) {
                 values.push(
                   "( '" + fechaHoy.toLocaleDateString() + "'", montoCuota, idEntidad, nroTarjeta, nroCuota, cuotas, "'" + fechaCuota.toLocaleDateString() + "' )"
@@ -454,56 +456,6 @@ app.use(
       }
     })
   }),
-
-  router.post('/entidades/facturar', (req, res) => { //Factura entre dia 22 de cada mes
-    const statement = "SELECT e.idEntidad, e.razonSocial, e.cbu, SUM(m.monto) as total FROM Movimientos m JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
-    function handleResult(err, numRows, rows) {
-      if (err) return console.error("Error: ", err);
-    }
-    let results = '';
-    let request = new tedious.Request(statement, handleResult);
-    var dt = new Date();
-    var anio = dt.getFullYear();
-    var mes = dt.getMonth();
-    request.addParameter('mesPost', TYPES.VarChar, (mes + 1).toString());
-    request.addParameter('mesPrev', TYPES.VarChar, mes.toString());
-    request.addParameter('anio', TYPES.VarChar, anio.toString());
-    request.on('row', function (columns) {
-      columns.forEach(function (column) {
-        results += column.value + " ";
-      });
-    });
-    request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-      if (results == '') {
-        res.status(404).json('No hay entidades a las que facturar');
-      }
-      else { //NOTIFICAR AL BANCO
-        res.json(results);
-      }
-    });
-    connection.execSql(request);
-  }),
-
-  router.post('/comisiones/calcular', (req, res) => { //Por cada cliente QUE TENGA CBU se calcula la comision y se le notifica al banco
-    getSubtotalForAllClientesWithCBU(function (result) {
-      var clientes = result;
-      if (clientes != null) {
-        var obj = JSON.parse(clientes)
-        obj.forEach(element => {
-          var total = element.subtotal + element.subtotal * 0.03;
-          delete element.subtotal;
-          element['total'] = total;
-        });
-        //NOTIFICAR AL BANCO
-        var response = JSON.stringify(obj);
-        res.json(response);
-      }
-      else {
-        res.status(404).json('No hay movimientos registrados de los clientes con CBU durante ese periodo');
-      }
-    });
-  }),
-
 )
 
 function defaulPass(long) {
@@ -544,9 +496,7 @@ function generarNumTarjeta(long) {
     });
     connection.execSql(request);
   };
-
   var cod = defaulCodigoNumerico(3);
-
   while (defaulCodigoNumerico(3)) {
     cod = defaulCodigoNumerico(3);
   }
@@ -670,18 +620,7 @@ function getSubtotalForAllClientesWithCBU(callback) {
   connection.execSql(request);
 }
 
-function resetDineroGastadoForAllClientes() { //PARA TODOS LOS CLIENTES EN TODOS LOS MESES??
-  request = new Request("UPDATE Tarjetas SET dineroGastado = 0 ", function (err) {
-    if (err) {
-      console.log(err);
-    }
-  });
-  connection.execSql(request);
-}
-
-
-var facturarEntidades = schedule.scheduleJob('* * * * *', function () {//Definir despues el intervalo de tiempo -> VER "START" EN DOCUMENTACION NODE SHEDULE
-console.log('ejecutado')
+schedule.scheduleJob('59 23 22 * *', function () {
   const statement = "SELECT e.cbu as cbuDestino, SUM(m.monto) as monto FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
@@ -701,30 +640,103 @@ console.log('ejecutado')
   });
   request.on('doneProc', function (rowCount, more, returnStatus, rows) {
     if (results == '') {
-      // res.status(404).json('No hay entidades a las que facturar');
-      console.log('//No hay entidades a las que facturar');
+      console.log('No hay entidades a las que facturar');
     }
     else {
       var obj = JSON.parse(results)
       obj.forEach((element) => {
-        //delete element.idEntidad;
-        //delete element.razonSocial;
         element["cbuOrigen"] = cbuEntidadCredito
         element["descripcion"] = 'Pago'
-        element["cbuDestino"] = '1230000000101' //sacar de la bd
       });
       obj = JSON.stringify(obj);
-      console.log(obj)
       fetch('https://bancaservice.azurewebsites.net/api/integration/transferir?movimientos=' +
-      //'[{"cbuOrigen":"1100000000000","cbuDestino":"1230000000101","monto":1000,"descripcion":"Pago del banco"}]'
-      obj + '&user=tarjeta01&origenMovimiento=origen1', {
+        obj + '&user=tarjeta01&origenMovimiento=origen1', {
         method: "POST",
         body: JSON.stringify(''),
         headers: { 'Content-Type': 'application/json' },
       }).then(res => res.json())
-      .then(json => console.log(json));
+        .then(json => console.log(json));
     }
   });
   connection.execSql(request);
 });
 
+schedule.scheduleJob('59 23 22 * *', function () {
+  getSubtotalForAllClientesWithCBU(function (result) {
+    var clientes = result;
+    if (clientes != null) {
+      var obj = JSON.parse(clientes)
+      obj.forEach(element => {
+        var total = element.subtotal + element.subtotal * 0.03;
+        delete element.subtotal;
+        element['monto'] = total;
+        element['cbuOrigen'] = cbuEntidadCredito;
+        element['descripcion'] = 'Pago';
+      });
+      var response = JSON.stringify(obj);
+      fetch('https://bancaservice.azurewebsites.net/api/integration/transferir?movimientos=' +
+        response + '&user=tarjeta01&origenMovimiento=origen1', {
+        method: "POST",
+        body: JSON.stringify(''),
+        headers: { 'Content-Type': 'application/json' },
+      }).then(res => res.json())
+        .then(json => console.log(json));
+    }
+    else {
+      console.log('No hay movimientos registrados de los clientes con CBU durante ese periodo');
+    }
+  });
+});
+
+schedule.scheduleJob('59 23 22 * *', function () {
+  request = new Request("UPDATE Tarjetas SET dineroGastado = 0 ", function (err) {
+    if (err) {
+      console.log(err);
+    }
+  });
+  connection.execSql(request);
+});
+
+function checkDineroGastado(){
+  var dt = new Date();
+  var anio = dt.getFullYear();
+  const statement = "SELECT fechaPago, monto, razonSocial, nroCuota, totalCuota FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE t.dni = @dni AND m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.addParameter('dni', TYPES.Int, dni);
+  request.addParameter('mesPrev', TYPES.VarChar, (mes - 1).toString());
+  request.addParameter('mesPost', TYPES.VarChar, mes.toString());
+  request.addParameter('anio', TYPES.VarChar, anio.toString());
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+    if (results == '') {
+      res.status(404).json('No hay movimientos registrados en ese periodo');
+    }
+    else {
+      var obj = JSON.parse(results)
+
+      const reducer = (accumulator, currentValue) => accumulator + currentValue;
+      var amountobj = obj.map((item) => { return item['monto'] });
+      var subtotalobj = amountobj.reduce(reducer);
+      var interes = subtotalobj * 0.03;
+      var total = interes + subtotalobj;
+
+      var subtotalobjJSON = { "subtotal": subtotalobj.toFixed(2) };
+      var interesJSON = { "intereses": interes.toFixed(2) };
+      var totalJSON = { "total": total.toFixed(2) }
+      obj.push(subtotalobjJSON);
+      obj.push(interesJSON);
+      obj.push(totalJSON);
+      var response = JSON.stringify(obj);
+      res.json(response);
+    }
+  });
+  connection.execSql(request);
+}
