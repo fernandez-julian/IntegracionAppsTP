@@ -131,7 +131,7 @@ export default class SearchCli extends Component {
                       <Table.HeaderCell>DNI</Table.HeaderCell>
                       <Table.HeaderCell>Telefono</Table.HeaderCell>
                       <Table.HeaderCell>Mail</Table.HeaderCell>
-                      <Table.HeaderCell>Clave Bancaria unica</Table.HeaderCell>
+                      <Table.HeaderCell>Clave Bancaria Unica</Table.HeaderCell>
                       <Table.HeaderCell />
                     </Table.Row>
                   </Table.Header>
