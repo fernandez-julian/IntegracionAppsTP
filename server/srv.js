@@ -8,18 +8,18 @@ var schedule = require('node-schedule');
 const fetch = require('node-fetch');
 
 var config = {
-  server: 'localhost',
+  server: 'entidadcreditosrv.database.windows.net',
   authentication: {
     type: 'default',
     options: {
-      userName: 'sa',
-      password: '123456'
+      userName: 'master',
+      password: 'credito$123456'
     }
   },
   options: {
     // If you are on Microsoft Azure, you need encryption:
     encrypt: true,
-    database: 'integradasTPO'
+    database: 'entidadCreditoBD'
   }
 };
 
@@ -48,6 +48,7 @@ var TYPES = require('tedious').TYPES;
 var cbuEntidadCredito = '1230000000127';//Esta es de prueba--------> pedir la real
 
 app.use(
+  router.get('/', (req, res) =>{res.send('hello')}),
   router.post('/log', (req, res) => {
     const { email, password } = req.body;
     const statement = "SELECT * FROM Usuarios WHERE mail = @mail and passPropia = @passPropia FOR JSON PATH"
@@ -679,7 +680,7 @@ function resetDineroGastadoForAllClientes() { //PARA TODOS LOS CLIENTES EN TODOS
 }
 
 
-/*var facturarEntidades = schedule.scheduleJob('* * * * *', function () {//Definir despues el intervalo de tiempo -> VER "START" EN DOCUMENTACION NODE SHEDULE
+var facturarEntidades = schedule.scheduleJob('* * * * *', function () {//Definir despues el intervalo de tiempo -> VER "START" EN DOCUMENTACION NODE SHEDULE
 console.log('ejecutado')
   const statement = "SELECT e.cbu as cbuDestino, SUM(m.monto) as monto FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
   function handleResult(err, numRows, rows) {
@@ -725,5 +726,5 @@ console.log('ejecutado')
     }
   });
   connection.execSql(request);
-});*/
+});
 
