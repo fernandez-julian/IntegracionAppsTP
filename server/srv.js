@@ -697,7 +697,12 @@ schedule.scheduleJob('59 23 22 * *', function () { //RESETEAR dineroGastado CUAN
   });
   request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
     if (results == '') {
-      res.status(404).json('No hay movimientos registrados en ese periodo');
+      request = new Request("UPDATE Tarjetas SET dineroGastado = 0", function (err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+      connection.execSql(request);
     }
     else {
       var obj = JSON.parse(results)
