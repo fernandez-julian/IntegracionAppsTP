@@ -423,9 +423,9 @@ app.use(
               var cantCuotas = cuotas;
               var nroCuota = 1;
               fechaCuota = new Date();
-              if(fechaHoy.getDate() > 22){
+              /*if(fechaHoy.getDate() > 22){
                 fechaCuota.setDate(23);
-              }
+              }*/
               while (cantCuotas != 0) {
                 values.push(
                   "( '" + fechaHoy.toLocaleDateString() + "'", montoCuota, idEntidad, nroTarjeta, nroCuota, cuotas, "'" + fechaCuota.toLocaleDateString() + "' )"
@@ -678,9 +678,10 @@ function resetDineroGastadoForAllClientes() { //PARA TODOS LOS CLIENTES EN TODOS
   connection.execSql(request);
 }
 
+
 var facturarEntidades = schedule.scheduleJob('* * * * *', function () {//Definir despues el intervalo de tiempo -> VER "START" EN DOCUMENTACION NODE SHEDULE
 console.log('ejecutado')
-  const statement = "SELECT e.cbu as cbuDestino, SUM(m.monto) as monto FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fecha BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
+  const statement = "SELECT e.cbu as cbuDestino, SUM(m.monto) as monto FROM movimientos m JOIN entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-22' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
