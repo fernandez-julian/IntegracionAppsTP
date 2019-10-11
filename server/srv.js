@@ -444,7 +444,7 @@ app.use(
         res.status(404).json('Tarjeta no existente o codigo de seguridad erroneo')
       }
     })
-  }),    
+  }),
 )
 
 function defaulPass(long) {
@@ -679,41 +679,41 @@ schedule.scheduleJob('59 23 22 * *', function () { //NOTIFICAR AL BANCO GASTOS D
 
 schedule.scheduleJob('59 23 22 * *', function () { //RESETEAR dineroGastado CUANDO EMPIEZA NUEVO PERIODO (los dias 22)
   var dt = new Date();
-    var anio = dt.getFullYear();
-    var mes = dt.getMonth();
-    const statement = "SELECT t.dni, SUM(m.monto) AS total FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-23' AND @anio+'-'+@mesPost+'-22' GROUP BY t.dni FOR JSON PATH"
-    function handleResult(err, numRows, rows) {
-      if (err) return console.error("Error: ", err);
+  var anio = dt.getFullYear();
+  var mes = dt.getMonth() + 1;
+  const statement = "SELECT t.dni, SUM(m.monto) AS total FROM Movimientos m JOIN Tarjetas t ON m.nroTarjeta = t.nroTarjeta JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-23' AND @anio+'-'+@mesPost+'-22' GROUP BY t.dni FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.addParameter('mesPrev', TYPES.VarChar, mes.toString());
+  request.addParameter('mesPost', TYPES.VarChar, (mes + 1).toString());
+  request.addParameter('anio', TYPES.VarChar, anio.toString());
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
+    if (results == '') {
+      res.status(404).json('No hay movimientos registrados en ese periodo');
     }
-    let results = '';
-    let request = new tedious.Request(statement, handleResult);
-    request.addParameter('mesPrev', TYPES.VarChar, mes.toString());
-    request.addParameter('mesPost', TYPES.VarChar, (mes + 1).toString());
-    request.addParameter('anio', TYPES.VarChar, anio.toString());
-    request.on('row', function (columns) {
-      columns.forEach(function (column) {
-        results += column.value + " ";
+    else {
+      var obj = JSON.parse(results)
+      var query = [];
+      query.push(" UPDATE Tarjetas SET dineroGastado = 0")
+      obj.forEach(element => {
+        query.push(" UPDATE Tarjetas SET dineroGastado = " + element.total + " WHERE dni = " + element.dni);
       });
-    });
-    request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
-      if (results == '') {
-        res.status(404).json('No hay movimientos registrados en ese periodo');
-      }
-      else {
-        var obj = JSON.parse(results)
-        var query = [];
-        query.push(" UPDATE Tarjetas SET dineroGastado = 0")
-        obj.forEach(element => {
-          query.push(" UPDATE Tarjetas SET dineroGastado = " + element.total + " WHERE dni = " + element.dni);
-        });
-        query = query.toString().replace(/,/g, " ");
-        request = new Request(query, function (err) {
-          if (err) {
-            console.log(err);
-          }
-        });
-        connection.execSql(request);
-      }
-    });
-    connection.execSql(request);
-  })
+      query = query.toString().replace(/,/g, " ");
+      request = new Request(query, function (err) {
+        if (err) {
+          console.log(err);
+        }
+      });
+      connection.execSql(request);
+    }
+  });
+  connection.execSql(request);
+})
