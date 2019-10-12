@@ -6,23 +6,23 @@ const router = express.Router();
 let tedious = require('tedious');
 var schedule = require('node-schedule');
 const fetch = require('node-fetch');
-/*
-var config = {
-  server: 'localhost',
+
+/*var config = {
+  server: 'entidadcreditosrv.database.windows.net',
   authentication: {
     type: 'default',
     options: {
-      userName: 'sa',
-      password: '123456'
+      userName: 'master',
+      password: 'credito$123456'
     }
   },
   options: {
     // If you are on Microsoft Azure, you need encryption:
     encrypt: true,
-    database: 'integradasTPO'
+    database: 'entidadCreditoBD'
   }
-};
-*/
+};*/
+
 var config = {
   server: 'localhost',
   authentication: {
