@@ -6,7 +6,7 @@ const router = express.Router();
 let tedious = require('tedious');
 var schedule = require('node-schedule');
 const fetch = require('node-fetch');
-
+/*
 var config = {
   server: 'entidadcreditosrv.database.windows.net',
   authentication: {
@@ -20,6 +20,22 @@ var config = {
     // If you are on Microsoft Azure, you need encryption:
     encrypt: true,
     database: 'entidadCreditoBD'
+  }
+};
+*/
+var config = {
+  server: 'localhost',
+  authentication: {
+    type: 'default',
+    options: {
+      userName: 'sa',
+      password: '123456'
+    }
+  },
+  options: {
+    // If you are on Microsoft Azure, you need encryption:
+    encrypt: true,
+    database: 'integradasTPO'
   }
 };
 
@@ -384,11 +400,10 @@ app.use(
         res.status(404).json('No existe tarjeta para ese cliente');
       }
       else {
-        var obj = JSON.parse(results)
-        obj.forEach(element => {
-          element.limite.toFixed(2);
-          element.dineroGastado.toFixed(2);
-        });
+        var objResult = JSON.parse(results);
+        var obj = new Object;
+        obj.limite = objResult[0]['limite'].toFixed(2);
+        obj.dineroGastado = objResult[0]['dineroGastado'].toFixed(2);
         var response = JSON.stringify(obj);
         res.json(response);
       }
