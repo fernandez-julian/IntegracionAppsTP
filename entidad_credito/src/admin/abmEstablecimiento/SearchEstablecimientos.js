@@ -195,7 +195,7 @@ export default class SearchEstablecimientos extends Component {
                         <Table.HeaderCell>Razón Social</Table.HeaderCell>
                         <Table.HeaderCell>Direccion</Table.HeaderCell>
                         <Table.HeaderCell>Telefono</Table.HeaderCell>
-                        <Table.HeaderCell>Clave Bancaria unica</Table.HeaderCell>
+                        <Table.HeaderCell>Clave Bancaria Unica</Table.HeaderCell>
                         <Table.HeaderCell />
                       </Table.Row>
                     </Table.Header>
