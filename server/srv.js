@@ -6,6 +6,7 @@ const router = express.Router();
 let tedious = require('tedious');
 var schedule = require('node-schedule');
 const fetch = require('node-fetch');
+var cors = require('cors');
 
 /*var config = {
   server: 'entidadcreditosrv.database.windows.net',
@@ -53,6 +54,9 @@ app.set('port', process.env.PORT || 8080);//defino valor del puerto
 
 //Middlewares
 app.use(express.json());//para enviar y recibir json
+
+//use cors
+app.use(cors());
 
 //Inicializar el srv
 app.listen(app.get('port'), () => {

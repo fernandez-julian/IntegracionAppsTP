@@ -56,8 +56,8 @@ class FromCli extends Component {
         requestBody.telefono = this.state.telefono;
         requestBody.mail = this.state.mail;
         requestBody.cbu = this.state.cbu;
-        fetch('/clientes/registrar', {
-
+        let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/clientes/registrar`;
+        fetch(urlConsulta, {
             method: "POST",
             body: JSON.stringify(requestBody),
             headers: new Headers({
@@ -119,7 +119,7 @@ class FromCli extends Component {
                         </Form.Group>
                         <Form.Group widths='equal'>
                             <Checkbox
-                                style={{marginLeft:'10px'}}
+                                style={{ marginLeft: '10px' }}
                                 label='CBU'
                                 name='checkBoxCbu'
                                 checked={this.state.checkBoxCbu === 'check'}

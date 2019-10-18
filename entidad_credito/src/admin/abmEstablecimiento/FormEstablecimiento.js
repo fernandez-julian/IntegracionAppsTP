@@ -20,20 +20,12 @@ class FromEstablecimiento extends Component {
 
     resetForm = () => {
         document.getElementById("form").reset();
-        this.setState({ razonSocial: '', direccion: '', telefono: ''});
+        this.setState({ razonSocial: '', direccion: '', telefono: '' });
     };
 
     openConfirm = () => this.setState({ openConfirm: true });
 
     closeConfirm = () => this.setState({ openConfirm: false });
-
-   /* 
-   handleConfirm = () => {
-        this.closeConfirm();
-        this.setState({ openSnackBar: true });
-        setTimeout(() => this.setState({ openSnackBar: false }), 3000);
-    };
-    */
 
     handleInputs = (e) => {
         const { value, name } = e.target;
@@ -57,17 +49,17 @@ class FromEstablecimiento extends Component {
         requestBody.direccion = this.state.direccion;
         requestBody.telefono = this.state.telefono;
         requestBody.cbu = this.state.cbu;
-        fetch('/entidades/registrar', {
-
+        let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/entidades/registrar`;
+        fetch(urlConsulta, {
             method: "POST",
             body: JSON.stringify(requestBody),
             headers: new Headers({
                 'Content-Type': 'application/json'
             }),
         }).then(response => { return response.json() })
-           .then(this.setState({ openSnackBar: true }));
-           setTimeout(() => this.setState({ openSnackBar: false }), 3000);
-    }; 
+            .then(this.setState({ openSnackBar: true }));
+        setTimeout(() => this.setState({ openSnackBar: false }), 3000);
+    };
 
     render() {
 
@@ -109,7 +101,7 @@ class FromEstablecimiento extends Component {
                         </Form.Group>
                         <Form.Group widths='equal'>
                             <Checkbox
-                                style={{marginLeft:'10px'}}
+                                style={{ marginLeft: '10px' }}
                                 label='CBU'
                                 name='checkBoxCbu'
                                 checked={this.state.checkBoxCbu === 'check'}

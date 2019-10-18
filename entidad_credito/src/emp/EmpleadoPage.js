@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import card from '../usr/creditCard.png';
-//import ModalUser from './ModalUser';
 import {
   Container,
   Dropdown,
