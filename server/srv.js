@@ -415,44 +415,61 @@ app.use(
         isHabilitado(nroTarjeta, monto / cuotas, function (result) {
           habilitado = result;
           if (habilitado) {
-            var fechaHoy = new Date();
-            if (cuotas == 1) {
-              request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values (@fechaPago, @monto, @idEntidad, @nroTarjeta, @nroCuota, @totalCuota, @fechaCuota)", function (err) {
-                if (err) {
-                  console.log(err);
-                }
-              });
-              request.addParameter('fechaPago', TYPES.Date, fechaHoy);
-              request.addParameter('monto', TYPES.Float, monto);
-              request.addParameter('idEntidad', TYPES.Int, idEntidad);
-              request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
-              request.addParameter('nroCuota', TYPES.Int, 1);
-              request.addParameter('totalCuota', TYPES.Int, 1);
-              request.addParameter('fechaCuota', TYPES.Date, fechaHoy);
-              connection.execSql(request);
-            }
-            else if (cuotas > 1) {
-              var montoCuota = monto / cuotas;
-              var values = [];
-              var cantCuotas = cuotas;
-              var nroCuota = 1;
-              fechaCuota = new Date();
-              while (cantCuotas != 0) {
-                values.push(
-                  "( '" + fechaHoy.toLocaleDateString() + "'", montoCuota, idEntidad, nroTarjeta, nroCuota, cuotas, "'" + fechaCuota.toLocaleDateString() + "' )"
-                )
-                nroCuota++;
-                cantCuotas--;
-                fechaCuota.setMonth(fechaCuota.getMonth() + 1);
+            getCbuEntidad(idEntidad, function (cbuEntidad) {
+              var obj = JSON.parse(cbuEntidad);
+              var fechaHoy = new Date();
+              if (cuotas == 1) {
+                montoReal = monto;
+                request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values (@fechaPago, @monto, @idEntidad, @nroTarjeta, @nroCuota, @totalCuota, @fechaCuota)", function (err) {
+                  if (err) {
+                    console.log(err);
+                  }
+                });
+                request.addParameter('fechaPago', TYPES.Date, fechaHoy);
+                request.addParameter('monto', TYPES.Float, monto);
+                request.addParameter('idEntidad', TYPES.Int, idEntidad);
+                request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
+                request.addParameter('nroCuota', TYPES.Int, 1);
+                request.addParameter('totalCuota', TYPES.Int, 1);
+                request.addParameter('fechaCuota', TYPES.Date, fechaHoy);
+                connection.execSql(request);
               }
-              request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) VALUES " + values, function (err) {
-                if (err) {
-                  console.log(err);
+              else if (cuotas > 1) {
+                var montoCuota = monto / cuotas;
+                var values = [];
+                var cantCuotas = cuotas;
+                var nroCuota = 1;
+                fechaCuota = new Date();
+                while (cantCuotas != 0) {
+                  values.push(
+                    "( '" + fechaHoy.toLocaleDateString() + "'", montoCuota, idEntidad, nroTarjeta, nroCuota, cuotas, "'" + fechaCuota.toLocaleDateString() + "' )"
+                  )
+                  nroCuota++;
+                  cantCuotas--;
+                  fechaCuota.setMonth(fechaCuota.getMonth() + 1);
                 }
+                request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) VALUES " + values, function (err) {
+                  if (err) {
+                    console.log(err);
+                  }
+                });
+                connection.execSql(request);
+              }
+              obj.forEach(element => {
+                element['monto'] = monto;
+                element['cbuOrigen'] = cbuEntidadCredito;
+                element['descripcion'] = 'Pago';
               });
-              connection.execSql(request);
-            }
-            res.status(200).json('El proceso de compra se realizo con exito')
+              obj = JSON.stringify(obj);
+              fetch('https://bancaservice.azurewebsites.net/api/integration/transferir?movimientos=' +
+                obj + '&user=tarjeta01&origenMovimiento=origen1', {
+                method: "POST",
+                body: JSON.stringify(''),
+                headers: { 'Content-Type': 'application/json' },
+              }).then(res => res.json())
+                .then(json => console.log(json));
+            });
+            res.status(200).json('El proceso de compra se realizo con exito');
           }
           else {
             res.status(403).json('Pago rechazado por saldo insuficiente')
@@ -628,46 +645,25 @@ function getSubtotalForAllClientesWithCBU(callback) {
   connection.execSql(request);
 }
 
-schedule.scheduleJob('59 23 22 * *', function () { //NOTIFICAR AL BANCO FACTURACION DE ENTIDADES
-  const statement = "SELECT e.cbu as cbuDestino, SUM(m.monto) as monto FROM Movimientos m JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-23' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
+function getCbuEntidad(idEntidad, callback) {
+  const statement = "SELECT cbu AS cbuDestino FROM Entidades WHERE idEntidad = @idEntidad FOR JSON PATH"
   function handleResult(err, numRows, rows) {
     if (err) return console.error("Error: ", err);
   }
   let results = '';
   let request = new tedious.Request(statement, handleResult);
-  var dt = new Date();
-  var anio = dt.getFullYear();
-  var mes = dt.getMonth();
-  request.addParameter('mesPost', TYPES.VarChar, (mes + 1).toString());
-  request.addParameter('mesPrev', TYPES.VarChar, mes.toString());
-  request.addParameter('anio', TYPES.VarChar, anio.toString());
+  request.addParameter('idEntidad', TYPES.Int, idEntidad);
   request.on('row', function (columns) {
     columns.forEach(function (column) {
       results += column.value + " ";
     });
   });
-  request.on('doneProc', function (rowCount, more, returnStatus, rows) {
-    if (results == '') {
-      console.log('No hay entidades a las que facturar');
-    }
-    else {
-      var obj = JSON.parse(results)
-      obj.forEach((element) => {
-        element["cbuOrigen"] = cbuEntidadCredito
-        element["descripcion"] = 'Pago'
-      });
-      obj = JSON.stringify(obj);
-      fetch('https://bancaservice.azurewebsites.net/api/integration/transferir?movimientos=' +
-        obj + '&user=tarjeta01&origenMovimiento=origen1', {
-        method: "POST",
-        body: JSON.stringify(''),
-        headers: { 'Content-Type': 'application/json' },
-      }).then(res => res.json())
-        .then(json => console.log(json));
-    }
+  request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
+    if (results == '') return callback(null);
+    else return callback(results);
   });
   connection.execSql(request);
-});
+}
 
 schedule.scheduleJob('59 23 22 * *', function () { //NOTIFICAR AL BANCO GASTOS DE CLIENTES
   getSubtotalForAllClientesWithCBU(function (result) {
@@ -741,3 +737,46 @@ schedule.scheduleJob('59 23 22 * *', function () { //RESETEAR dineroGastado CUAN
   });
   connection.execSql(request);
 })
+
+/*
+schedule.scheduleJob('59 23 22 * *', function () { //NOTIFICAR AL BANCO FACTURACION DE ENTIDADES
+  const statement = "SELECT e.cbu as cbuDestino, SUM(m.monto) as monto FROM Movimientos m JOIN Entidades e ON m.idEntidad = e.idEntidad WHERE m.fechaCuota BETWEEN @anio+'-'+@mesPrev+'-23' AND @anio+'-'+@mesPost+'-22' GROUP BY e.idEntidad, e.razonSocial, e.cbu FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  var dt = new Date();
+  var anio = dt.getFullYear();
+  var mes = dt.getMonth();
+  request.addParameter('mesPost', TYPES.VarChar, (mes + 1).toString());
+  request.addParameter('mesPrev', TYPES.VarChar, mes.toString());
+  request.addParameter('anio', TYPES.VarChar, anio.toString());
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('doneProc', function (rowCount, more, returnStatus, rows) {
+    if (results == '') {
+      console.log('No hay entidades a las que facturar');
+    }
+    else {
+      var obj = JSON.parse(results)
+      obj.forEach((element) => {
+        element["cbuOrigen"] = cbuEntidadCredito
+        element["descripcion"] = 'Pago'
+      });
+      obj = JSON.stringify(obj);
+      fetch('https://bancaservice.azurewebsites.net/api/integration/transferir?movimientos=' +
+        obj + '&user=tarjeta01&origenMovimiento=origen1', {
+        method: "POST",
+        body: JSON.stringify(''),
+        headers: { 'Content-Type': 'application/json' },
+      }).then(res => res.json())
+        .then(json => console.log(json));
+    }
+  });
+  connection.execSql(request);
+});
+*/
