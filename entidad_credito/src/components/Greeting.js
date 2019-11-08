@@ -48,13 +48,7 @@ export default class Greeting extends Component {
           </Modal.Content>
         </Modal>
 
-        {/*
-         <Segment circular inverted color='olive' size='big'
-          style={{ left: '40%', position: 'fixed', top: '50%', zIndex: 1000 }}
-        >
-          <p>Bienvenido...</p>
-        </Segment>
-          */}
+        {}
       </TransitionablePortal>
     )
   }

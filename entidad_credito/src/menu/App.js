@@ -4,10 +4,7 @@ import UserPage from '../cliente/UserPage';
 import AdminPage from '../admin/AdminPage';
 
 class App extends React.Component {//
-  /*Verrificar logIn
-  /*If -> logueado o no logueado
-  /*Si cumple -> mostrar correspondiente pagina
-  */
+ 
   state = {
     usr: [],
     loggedIn: false,

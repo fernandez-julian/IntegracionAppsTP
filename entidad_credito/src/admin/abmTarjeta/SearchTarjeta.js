@@ -26,7 +26,8 @@ export default class SearchTarjeta extends Component {
   };
 
   componentDidMount() {
-    fetch('/tarjetas/obtener')
+    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/tarjetas/obtener`;
+    fetch(urlConsulta)
       .then(response => {
         if (response.status === 200) {
           this.setState({ cardExistence: true })
@@ -109,8 +110,8 @@ export default class SearchTarjeta extends Component {
     } else {
       requestBody.limite = null;
     }
-
-    fetch('/tarjetas/actualizar', {
+    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/tarjetas/actualizar`;
+    fetch(urlConsulta, {
       method: "POST",
       body: JSON.stringify(requestBody),
       headers: new Headers({
@@ -131,7 +132,8 @@ export default class SearchTarjeta extends Component {
 
     let requestBody = {};
     requestBody.nroTarjeta = item.nroTarjeta;
-    fetch('/tarjetas/eliminar', {
+    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/tarjetas/eliminar`;
+    fetch(urlConsulta, {
       method: "POST",
       body: JSON.stringify(requestBody),
       headers: new Headers({

@@ -38,7 +38,7 @@ class FromTarjeta extends Component {
 
     resetForm = () => {
         document.getElementById("form").reset();
-        this.setState({ dni: '', limite: ''});
+        this.setState({ dni: '', limite: '' });
     };
 
     createCard = event => {
@@ -46,14 +46,16 @@ class FromTarjeta extends Component {
         let requestBody = {};
         requestBody.dni = this.state.dni;
         requestBody.limite = this.state.limite;
-        fetch('/tarjetas/registrar', {
+        let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/tarjetas/registrar`;
+        fetch(urlConsulta, {
             method: "POST",
             body: JSON.stringify(requestBody),
             headers: new Headers({
                 'Content-Type': 'application/json'
             }),
-        }).then(response => { 
-            return response.json() })
+        }).then(response => {
+            return response.json()
+        })
             .then(response => {
                 this.setState({ createMessage: response });
             }).then(this.setState({ openSnackBar: true }));

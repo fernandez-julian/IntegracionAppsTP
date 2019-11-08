@@ -18,7 +18,8 @@ class InicioCli extends Component {
     componentDidMount() {
         let requestBody = {};
         requestBody.dni = this.props.cli[0]['dni'];
-        fetch('/tarjetas/obtenerPorCliente', {
+        let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/tarjetas/obtenerPorCliente`;
+        fetch(urlConsulta, {
             method: "POST",
             body: JSON.stringify(requestBody),
             headers: new Headers({

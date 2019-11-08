@@ -32,7 +32,8 @@ class LogIn extends Component {
     let requestBody = {};
     requestBody.email = this.state.email;
     requestBody.password = this.state.password;
-    fetch('/log', {
+    let urlConsulta =`${"https://tarjetacredito.azurewebsites.net"}/log`;
+    fetch(urlConsulta, {
       method: "POST",
       mode: 'cors',
       body: JSON.stringify(requestBody),

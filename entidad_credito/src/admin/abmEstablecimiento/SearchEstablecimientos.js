@@ -28,7 +28,8 @@ export default class SearchEstablecimientos extends Component {
   };
 
   componentDidMount() {
-    fetch('/entidades/obtener')
+    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/entidades/obtener`;
+    fetch(urlConsulta)
       .then(response => {
         if (response.status === 200) {
           this.setState({ entidadesExistence: true })
@@ -122,8 +123,8 @@ export default class SearchEstablecimientos extends Component {
     } else {
       requestBody.telefono = null;
     }
-
-    fetch('/entidades/actualizar', {
+    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/entidades/actualizar`;
+    fetch(urlConsulta, {
       method: "POST",
       body: JSON.stringify(requestBody),
       headers: new Headers({
@@ -144,7 +145,8 @@ export default class SearchEstablecimientos extends Component {
 
     let requestBody = {};
     requestBody.idEntidad = item.idEntidad;
-    fetch('/entidades/eliminar', {
+    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/entidades/eliminar`;
+    fetch(urlConsulta, {
       method: "POST",
       body: JSON.stringify(requestBody),
       headers: new Headers({

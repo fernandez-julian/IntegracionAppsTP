@@ -26,7 +26,7 @@ class ChangePass extends Component {
 
     resetForm = () => {
         document.getElementById("form").reset();
-        this.setState({ currentPass: '', newPass: '' , success: false});
+        this.setState({ currentPass: '', newPass: '', success: false });
     };
 
     handleExit = () => {
@@ -42,7 +42,8 @@ class ChangePass extends Component {
                 requestBody.usrEmail = this.props.usrEmail;
                 requestBody.currentPass = this.state.currentPass;
                 requestBody.newPass = this.state.newPass;
-                fetch('/clientes/cambiarPass', {
+                let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/clientes/cambiarPass`;
+                fetch(urlConsulta, {
                     method: "POST",
                     body: JSON.stringify(requestBody),
                     headers: new Headers({
@@ -104,13 +105,6 @@ class ChangePass extends Component {
                     </Modal.Content>
                     <SnackBar info open={this.state.openSnackBar} close={this.closeSnackBar}>{this.state.msj}</SnackBar>
                     {
-                        /* this.state.success === true
-                             ? <Lottie
-                                 options={defaultOptions}
-                                 height={150}
-                                 width={150}
-                             />
-                             : null*/
                     }
                 </Modal>
             </Container>
