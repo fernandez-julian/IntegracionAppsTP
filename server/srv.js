@@ -401,6 +401,100 @@ app.use(
     connection.execSql(request);
   }),
 
+  router.post('/chequearTarjeta', (req, res) => {
+    var { nroTarjeta, codSeg } = req.body;
+    existeTarjetaConCodigo(nroTarjeta, codSeg, function (result) {
+      existe = result;
+      if (existe) {
+        res.status(200).json('Los datos son correctos');
+      }
+      else {
+        res.status(404).json('Los datos no conciden');
+      }
+    })
+  }),
+
+  router.post('/registrar', (req, res) => { //NO VA, ES SOLO PAR APROBAR
+    var movimientos = req.body;
+    var x = new Array();
+    res.json(movimientos)
+    console.log(movimientos)
+    x.push('hola')
+    console.log(x)
+  }),
+
+  //EJEMPLO DE UNA PETICION (ARRAY)
+  /*
+  {
+    "movimientos": [{"nroTarjeta":"1","codSeg":1,"monto":1,"idEntidad":1,"cuotas":1},{"nroTarjeta":"2","codSeg":2,"monto":2,"idEntidad":2,"cuotas":2}]
+  }
+  */
+  router.post('/movimientos/registrarMuchos', (req, res) => { //FALTA DOCUMENTAR
+    var movimientos = req.body;
+    var respuestas = new Array();
+    movimientos.movimientos.map(function (item) {
+      var { nroTarjeta, codSeg, monto, idEntidad, cuotas } = item;
+      var existe;
+      var habilitado;
+      existeTarjetaConCodigo(nroTarjeta, codSeg, function (result) {
+        existe = result;
+        if (existe) {
+          isHabilitado(nroTarjeta, monto / cuotas, function (result) {
+            habilitado = result;
+            if (habilitado) {
+              var fechaHoy = new Date();
+              if (cuotas == 1) {
+                request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values (@fechaPago, @monto, @idEntidad, @nroTarjeta, @nroCuota, @totalCuota, @fechaCuota)", function (err) {
+                  if (err) {
+                    console.log(err);
+                  }
+                });
+                request.addParameter('fechaPago', TYPES.Date, fechaHoy);
+                request.addParameter('monto', TYPES.Float, monto);
+                request.addParameter('idEntidad', TYPES.Int, idEntidad);
+                request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
+                request.addParameter('nroCuota', TYPES.Int, 1);
+                request.addParameter('totalCuota', TYPES.Int, 1);
+                request.addParameter('fechaCuota', TYPES.Date, fechaHoy);
+                connection.execSql(request);
+              }
+              else if (cuotas > 1) {
+                var montoCuota = monto / cuotas;
+                var values = [];
+                var cantCuotas = cuotas;
+                var nroCuota = 1;
+                fechaCuota = new Date();
+                while (cantCuotas != 0) {
+                  values.push(
+                    "( '" + fechaHoy.toLocaleDateString() + "'", montoCuota, idEntidad, nroTarjeta, nroCuota, cuotas, "'" + fechaCuota.toLocaleDateString() + "' )"
+                  )
+                  nroCuota++;
+                  cantCuotas--;
+                  fechaCuota.setMonth(fechaCuota.getMonth() + 1);
+                }
+                request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) VALUES " + values, function (err) {
+                  if (err) {
+                    console.log(err);
+                  }
+                });
+                connection.execSql(request);
+              }
+              respuestas.push('El proceso de compra se realizo con exito')
+            }
+            else {
+              respuestas.push('Pago rechazado por saldo insuficiente')
+            }
+          })
+        }
+        else {
+          respuestas.push('Tarjeta no existente o codigo de seguridad erroneo')
+        }
+      })
+
+    })
+    res.json(respuesta);
+  }),
+
   router.post('/movimientos/registrar', (req, res) => {
     var { nroTarjeta, codSeg, monto, idEntidad, cuotas } = req.body;
     var existe;
