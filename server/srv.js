@@ -434,69 +434,55 @@ app.use(
   }
   */
   router.post('/movimientos/registrarMuchos', (req, res) => { //FALTA DOCUMENTAR
+    var datosAIngresar = [];
     var movimientos = req.body;
     var respuestas = new Array();
-    movimientos.movimientos.map(function (item) {
-      var { nroTarjeta, codSeg, monto, idEntidad, cuotas } = item;
-      var existe;
-      var habilitado;
-      existeTarjetaConCodigo(nroTarjeta, codSeg, function (result) {
-        existe = result;
-        if (existe) {
-          isHabilitado(nroTarjeta, monto / cuotas, function (result) {
-            habilitado = result;
-            if (habilitado) {
+    var allTarjetas = new Array();
+    getAllTarjetasConCodigoYLimiteYDineroGastado(function (result) {
+      allTarjetas = result;
+      movimientos.movimientos.map(function (item) {
+        var { nroTarjeta, codSeg, monto, idEntidad, cuotas } = item;
+          if (verificarTarjetaConCodigo(allTarjetas, nroTarjeta, codSeg)) {
+            if (verificarHabilitado(allTarjetas, nroTarjeta, monto / cuotas)) {
               var fechaHoy = new Date();
               if (cuotas == 1) {
-                request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values (@fechaPago, @monto, @idEntidad, @nroTarjeta, @nroCuota, @totalCuota, @fechaCuota)", function (err) {
-                  if (err) {
-                    console.log(err);
-                  }
-                });
-                request.addParameter('fechaPago', TYPES.Date, fechaHoy);
-                request.addParameter('monto', TYPES.Float, monto);
-                request.addParameter('idEntidad', TYPES.Int, idEntidad);
-                request.addParameter('nroTarjeta', TYPES.VarChar, nroTarjeta);
-                request.addParameter('nroCuota', TYPES.Int, 1);
-                request.addParameter('totalCuota', TYPES.Int, 1);
-                request.addParameter('fechaCuota', TYPES.Date, fechaHoy);
-                connection.execSql(request);
+                datosAIngresar.push("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ( '" + fechaHoy.toLocaleDateString() + "', " + monto + ", " + idEntidad + ", " + nroTarjeta + ", " + 1 + ", " + 1 + ", '" + fechaHoy.toLocaleDateString() + "')");
+                datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + monto + " WHERE nroTarjeta = " + nroTarjeta);
               }
               else if (cuotas > 1) {
                 var montoCuota = monto / cuotas;
-                var values = [];
                 var cantCuotas = cuotas;
                 var nroCuota = 1;
                 fechaCuota = new Date();
                 while (cantCuotas != 0) {
-                  values.push(
-                    "( '" + fechaHoy.toLocaleDateString() + "'", montoCuota, idEntidad, nroTarjeta, nroCuota, cuotas, "'" + fechaCuota.toLocaleDateString() + "' )"
+                  datosAIngresar.push(
+                    "INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ('" + fechaHoy.toLocaleDateString() + "', " + montoCuota + ", " + idEntidad + ", " + nroTarjeta + ", " + nroCuota + ", " + cuotas + ", '" + fechaCuota.toLocaleDateString() + "')"
                   )
                   nroCuota++;
                   cantCuotas--;
                   fechaCuota.setMonth(fechaCuota.getMonth() + 1);
                 }
-                request = new Request("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) VALUES " + values, function (err) {
-                  if (err) {
-                    console.log(err);
-                  }
-                });
-                connection.execSql(request);
+                datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + montoCuota + " WHERE nroTarjeta = " + nroTarjeta);
               }
               respuestas.push('El proceso de compra se realizo con exito')
             }
             else {
               respuestas.push('Pago rechazado por saldo insuficiente')
             }
-          })
+          }
+          else {
+            respuestas.push('Tarjeta no existente o codigo de seguridad erroneo')
+          }
+      });
+      //console.log('datosAIngresar,   ', datosAIngresar.join(" "))
+      request = new Request(datosAIngresar.join(" "), function (err) {
+        if (err) {
+          console.log(err);
         }
-        else {
-          respuestas.push('Tarjeta no existente o codigo de seguridad erroneo')
-        }
-      })
-
-    })
-    res.json(respuesta);
+      });
+      connection.execSql(request);
+      res.json(respuestas);
+    });
   }),
 
   router.post('/movimientos/registrar', (req, res) => {
@@ -576,6 +562,29 @@ app.use(
     })
   }),
 )
+
+function verificarTarjetaConCodigo(result, nroTarjeta, codSeg){
+  result = JSON.parse(result);
+  var rta = false;
+  result.forEach(element => {
+    if(element['nroTarjeta'] == nroTarjeta && element['codSeg'] == codSeg){
+      rta = true;
+    }
+  });
+  return rta;
+}
+
+function verificarHabilitado(result, nroTarjeta, monto){
+  result = JSON.parse(result);
+  var rta = false;
+  result.forEach(element => {
+    if(element['nroTarjeta'] == nroTarjeta && element['limite'] >= (element['dineroGastado'] + monto)){
+      element['dineroGastado'] = element['dineroGastado'] + monto;
+      rta = true;
+    }
+  });
+  return rta;
+}
 
 function defaulPass(long) {
   var caracteres = "abcdefghijkmnpqrtuvwxyzABCDEFGHJKMNPQRTUVWXYZ2346789";
@@ -710,6 +719,25 @@ function existeTarjetaConCodigo(nroTarjeta, codSeg, callback) {
   request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
     if (results == '') return callback(false); //TARJETA O CODIGO ERRONEO
     else return callback(true);
+  });
+  connection.execSql(request);
+}
+
+function getAllTarjetasConCodigoYLimiteYDineroGastado(callback) {
+  const statement = "SELECT nroTarjeta, codSeg, limite, dineroGastado FROM Tarjetas FOR JSON PATH"
+  function handleResult(err, numRows, rows) {
+    if (err) return console.error("Error: ", err);
+  }
+  let results = '';
+  let request = new tedious.Request(statement, handleResult);
+  request.on('row', function (columns) {
+    columns.forEach(function (column) {
+      results += column.value + " ";
+    });
+  });
+  request.on('requestCompleted', function (rowCount, more, returnStatus, rows) {
+    if (results == '') return callback(results);
+    else return callback(results);
   });
   connection.execSql(request);
 }
