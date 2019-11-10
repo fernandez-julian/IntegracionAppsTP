@@ -439,42 +439,48 @@ app.use(
     var respuestas = new Array();
     var allTarjetas = new Array();
     getAllTarjetasConCodigoYLimiteYDineroGastado(function (result) {
-      allTarjetas = result;
+      allTarjetas = JSON.parse(result);
       movimientos.movimientos.map(function (item) {
         var { nroTarjeta, codSeg, monto, idEntidad, cuotas } = item;
-          if (verificarTarjetaConCodigo(allTarjetas, nroTarjeta, codSeg)) {
-            if (verificarHabilitado(allTarjetas, nroTarjeta, monto / cuotas)) {
-              var fechaHoy = new Date();
-              if (cuotas == 1) {
-                datosAIngresar.push("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ( '" + fechaHoy.toLocaleDateString() + "', " + monto + ", " + idEntidad + ", " + nroTarjeta + ", " + 1 + ", " + 1 + ", '" + fechaHoy.toLocaleDateString() + "')");
-                datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + monto + " WHERE nroTarjeta = " + nroTarjeta);
-              }
-              else if (cuotas > 1) {
-                var montoCuota = monto / cuotas;
-                var cantCuotas = cuotas;
-                var nroCuota = 1;
-                fechaCuota = new Date();
-                while (cantCuotas != 0) {
-                  datosAIngresar.push(
-                    "INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ('" + fechaHoy.toLocaleDateString() + "', " + montoCuota + ", " + idEntidad + ", " + nroTarjeta + ", " + nroCuota + ", " + cuotas + ", '" + fechaCuota.toLocaleDateString() + "')"
-                  )
-                  nroCuota++;
-                  cantCuotas--;
-                  fechaCuota.setMonth(fechaCuota.getMonth() + 1);
-                }
-                datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + montoCuota + " WHERE nroTarjeta = " + nroTarjeta);
-              }
-              respuestas.push('El proceso de compra se realizo con exito')
+        if (verificarTarjetaConCodigo(allTarjetas, nroTarjeta, codSeg)) {
+          var rta = false;
+          allTarjetas.forEach(element => {
+            if (element['nroTarjeta'] == nroTarjeta && element['limite'] >= (element['dineroGastado'] + (monto / cuotas))) {
+              element['dineroGastado'] = element['dineroGastado'] + (monto / cuotas);
+              rta = true;
             }
-            else {
-              respuestas.push('Pago rechazado por saldo insuficiente')
+          })
+          if (rta) {
+            var fechaHoy = new Date();
+            if (cuotas == 1) {
+              datosAIngresar.push("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ( '" + fechaHoy.toLocaleDateString() + "', " + monto + ", " + idEntidad + ", " + nroTarjeta + ", " + 1 + ", " + 1 + ", '" + fechaHoy.toLocaleDateString() + "')");
+              datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + monto + " WHERE nroTarjeta = " + nroTarjeta);
             }
+            else if (cuotas > 1) {
+              var montoCuota = monto / cuotas;
+              var cantCuotas = cuotas;
+              var nroCuota = 1;
+              fechaCuota = new Date();
+              while (cantCuotas != 0) {
+                datosAIngresar.push(
+                  "INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ('" + fechaHoy.toLocaleDateString() + "', " + montoCuota + ", " + idEntidad + ", " + nroTarjeta + ", " + nroCuota + ", " + cuotas + ", '" + fechaCuota.toLocaleDateString() + "')"
+                )
+                nroCuota++;
+                cantCuotas--;
+                fechaCuota.setMonth(fechaCuota.getMonth() + 1);
+              }
+              datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + montoCuota + " WHERE nroTarjeta = " + nroTarjeta);
+            }
+            respuestas.push('El proceso de compra se realizo con exito')
           }
           else {
-            respuestas.push('Tarjeta no existente o codigo de seguridad erroneo')
+            respuestas.push('Pago rechazado por saldo insuficiente')
           }
+        }
+        else {
+          respuestas.push('Tarjeta no existente o codigo de seguridad erroneo')
+        }
       });
-      //console.log('datosAIngresar,   ', datosAIngresar.join(" "))
       request = new Request(datosAIngresar.join(" "), function (err) {
         if (err) {
           console.log(err);
@@ -563,22 +569,21 @@ app.use(
   }),
 )
 
-function verificarTarjetaConCodigo(result, nroTarjeta, codSeg){
-  result = JSON.parse(result);
+function verificarTarjetaConCodigo(result, nroTarjeta, codSeg) {
   var rta = false;
   result.forEach(element => {
-    if(element['nroTarjeta'] == nroTarjeta && element['codSeg'] == codSeg){
+    if (element['nroTarjeta'] == nroTarjeta && element['codSeg'] == codSeg) {
       rta = true;
     }
   });
   return rta;
 }
 
-function verificarHabilitado(result, nroTarjeta, monto){
+function verificarHabilitado(result, nroTarjeta, monto) {
   result = JSON.parse(result);
   var rta = false;
   result.forEach(element => {
-    if(element['nroTarjeta'] == nroTarjeta && element['limite'] >= (element['dineroGastado'] + monto)){
+    if (element['nroTarjeta'] == nroTarjeta && element['limite'] >= (element['dineroGastado'] + monto)) {
       element['dineroGastado'] = element['dineroGastado'] + monto;
       rta = true;
     }
