@@ -28,7 +28,7 @@ export default class SearchEstablecimientos extends Component {
   };
 
   componentDidMount() {
-    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/entidades/obtener`;
+    let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/entidades/obtener`;
     fetch(urlConsulta)
       .then(response => {
         if (response.status === 200) {
@@ -123,7 +123,7 @@ export default class SearchEstablecimientos extends Component {
     } else {
       requestBody.telefono = null;
     }
-    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/entidades/actualizar`;
+    let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/entidades/actualizar`;
     fetch(urlConsulta, {
       method: "POST",
       body: JSON.stringify(requestBody),
@@ -145,7 +145,7 @@ export default class SearchEstablecimientos extends Component {
 
     let requestBody = {};
     requestBody.idEntidad = item.idEntidad;
-    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/entidades/eliminar`;
+    let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/entidades/eliminar`;
     fetch(urlConsulta, {
       method: "POST",
       body: JSON.stringify(requestBody),

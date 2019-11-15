@@ -46,7 +46,7 @@ class FromTarjeta extends Component {
         let requestBody = {};
         requestBody.dni = this.state.dni;
         requestBody.limite = this.state.limite;
-        let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/tarjetas/registrar`;
+        let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/tarjetas/registrar`;
         fetch(urlConsulta, {
             method: "POST",
             body: JSON.stringify(requestBody),

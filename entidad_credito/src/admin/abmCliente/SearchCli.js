@@ -20,7 +20,7 @@ export default class SearchCli extends Component {
   };
 
   componentDidMount() {
-    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/clientes/obtener`;
+    let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/clientes/obtener`;
     fetch(urlConsulta)
       .then(response => {
         if (response.status === 200) {
@@ -77,7 +77,7 @@ export default class SearchCli extends Component {
 
     let requestBody = {};
     requestBody.dni = item.dni;
-    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/clientes/eliminar`;
+    let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/clientes/eliminar`;
     fetch(urlConsulta, {
       method: "POST",
       body: JSON.stringify(requestBody),

@@ -32,7 +32,7 @@ class LogIn extends Component {
     let requestBody = {};
     requestBody.email = this.state.email;
     requestBody.password = this.state.password;
-    let urlConsulta =`${"https://tarjetacredito.azurewebsites.net"}/log`;
+    let urlConsulta =`${"http://tarjetaback.herokuapp.com"}/log`;
     fetch(urlConsulta, {
       method: "POST",
       mode: 'cors',

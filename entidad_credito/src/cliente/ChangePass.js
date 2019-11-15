@@ -42,7 +42,7 @@ class ChangePass extends Component {
                 requestBody.usrEmail = this.props.usrEmail;
                 requestBody.currentPass = this.state.currentPass;
                 requestBody.newPass = this.state.newPass;
-                let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/clientes/cambiarPass`;
+                let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/clientes/cambiarPass`;
                 fetch(urlConsulta, {
                     method: "POST",
                     body: JSON.stringify(requestBody),

@@ -68,7 +68,7 @@ class Liquidaciones extends Component {
       let requestBody = {};
       requestBody.dni = this.props.cli[0]['dni'];
       requestBody.mes = value;
-      let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/movimientos/obtener`;
+      let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/movimientos/obtener`;
       fetch(urlConsulta, {
         method: "POST",
         body: JSON.stringify(requestBody),

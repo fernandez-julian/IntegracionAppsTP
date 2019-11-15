@@ -49,7 +49,7 @@ class FromEstablecimiento extends Component {
         requestBody.direccion = this.state.direccion;
         requestBody.telefono = this.state.telefono;
         requestBody.cbu = this.state.cbu;
-        let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/entidades/registrar`;
+        let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/entidades/registrar`;
         fetch(urlConsulta, {
             method: "POST",
             body: JSON.stringify(requestBody),

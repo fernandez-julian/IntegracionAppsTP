@@ -26,7 +26,7 @@ export default class SearchTarjeta extends Component {
   };
 
   componentDidMount() {
-    let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/tarjetas/obtener`;
+    let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/tarjetas/obtener`;
     fetch(urlConsulta)
       .then(response => {
         if (response.status === 200) {

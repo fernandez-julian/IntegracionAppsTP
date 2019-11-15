@@ -56,7 +56,7 @@ class FromCli extends Component {
         requestBody.telefono = this.state.telefono;
         requestBody.mail = this.state.mail;
         requestBody.cbu = this.state.cbu;
-        let urlConsulta = `${"https://tarjetacredito.azurewebsites.net"}/clientes/registrar`;
+        let urlConsulta = `${"http://tarjetaback.herokuapp.com"}/clientes/registrar`;
         fetch(urlConsulta, {
             method: "POST",
             body: JSON.stringify(requestBody),
