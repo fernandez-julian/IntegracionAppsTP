@@ -65,7 +65,7 @@ app.listen(app.get('port'), () => {
 
 var Request = require('tedious').Request;
 var TYPES = require('tedious').TYPES;
-var cbuEntidadCredito = '1230000000127';//Esta es de prueba--------> pedir la real
+var cbuEntidadCredito = '1230000000120';
 
 app.use(
   router.get('/', (req, res) => { res.send('hello') }),
@@ -418,15 +418,6 @@ app.use(
     })
   }),
 
-  router.post('/registrar', (req, res) => { //NO VA, ES SOLO PAR APROBAR
-    var movimientos = req.body;
-    var x = new Array();
-    res.json(movimientos)
-    console.log(movimientos)
-    x.push('hola')
-    console.log(x)
-  }),
-
   //EJEMPLO DE UNA PETICION (ARRAY)
   /*
   {
@@ -435,59 +426,78 @@ app.use(
   */
   router.post('/movimientos/registrarMuchos', (req, res) => { //FALTA DOCUMENTAR
     var datosAIngresar = [];
+    var movs = new Array();
     var movimientos = req.body;
     var respuestas = new Array();
     var allTarjetas = new Array();
-    getAllTarjetasConCodigoYLimiteYDineroGastado(function (result) {
-      allTarjetas = JSON.parse(result);
-      movimientos.movimientos.map(function (item) {
-        var { nroTarjeta, codSeg, monto, idEntidad, cuotas } = item;
-        if (verificarTarjetaConCodigo(allTarjetas, nroTarjeta, codSeg)) {
-          var rta = false;
-          allTarjetas.forEach(element => {
-            if (element['nroTarjeta'] == nroTarjeta && element['limite'] >= (element['dineroGastado'] + (monto / cuotas))) {
-              element['dineroGastado'] = element['dineroGastado'] + (monto / cuotas);
-              rta = true;
-            }
-          })
-          if (rta) {
-            var fechaHoy = new Date();
-            if (cuotas == 1) {
-              datosAIngresar.push("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ( '" + fechaHoy.toLocaleDateString() + "', " + monto + ", " + idEntidad + ", " + nroTarjeta + ", " + 1 + ", " + 1 + ", '" + fechaHoy.toLocaleDateString() + "')");
-              datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + monto + " WHERE nroTarjeta = " + nroTarjeta);
-            }
-            else if (cuotas > 1) {
-              var montoCuota = monto / cuotas;
-              var cantCuotas = cuotas;
-              var nroCuota = 1;
-              fechaCuota = new Date();
-              while (cantCuotas != 0) {
-                datosAIngresar.push(
-                  "INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ('" + fechaHoy.toLocaleDateString() + "', " + montoCuota + ", " + idEntidad + ", " + nroTarjeta + ", " + nroCuota + ", " + cuotas + ", '" + fechaCuota.toLocaleDateString() + "')"
-                )
-                nroCuota++;
-                cantCuotas--;
-                fechaCuota.setMonth(fechaCuota.getMonth() + 1);
+    var idE = movimientos.movimientos[0].idEntidad;
+    getCbuEntidad(idE, function (cbuEntidad) {
+      getAllTarjetasConCodigoYLimiteYDineroGastado(function (result) {
+        allTarjetas = JSON.parse(result);
+        movimientos.movimientos.map(function (item) {
+          var { nroTarjeta, codSeg, monto, idEntidad, cuotas } = item;
+          if (verificarTarjetaConCodigo(allTarjetas, nroTarjeta, codSeg)) {
+            var rta = false;
+            allTarjetas.forEach(element => {
+              if (element['nroTarjeta'] == nroTarjeta && element['limite'] >= (element['dineroGastado'] + (monto / cuotas))) {
+                element['dineroGastado'] = element['dineroGastado'] + (monto / cuotas);
+                rta = true;
               }
-              datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + montoCuota + " WHERE nroTarjeta = " + nroTarjeta);
+            })
+            if (rta) {
+              var fechaHoy = new Date();
+              if (cuotas == 1) {
+                datosAIngresar.push("INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ( '" + fechaHoy.toLocaleDateString() + "', " + monto + ", " + idEntidad + ", " + nroTarjeta + ", " + 1 + ", " + 1 + ", '" + fechaHoy.toLocaleDateString() + "')");
+                datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + monto + " WHERE nroTarjeta = " + nroTarjeta);
+              }
+              else if (cuotas > 1) {
+                var montoCuota = monto / cuotas;
+                var cantCuotas = cuotas;
+                var nroCuota = 1;
+                fechaCuota = new Date();
+                while (cantCuotas != 0) {
+                  datosAIngresar.push(
+                    "INSERT INTO Movimientos (fechaPago, monto, idEntidad, nroTarjeta, nroCuota, totalCuota, fechaCuota) values ('" + fechaHoy.toLocaleDateString() + "', " + montoCuota + ", " + idEntidad + ", " + nroTarjeta + ", " + nroCuota + ", " + cuotas + ", '" + fechaCuota.toLocaleDateString() + "')"
+                  )
+                  nroCuota++;
+                  cantCuotas--;
+                  fechaCuota.setMonth(fechaCuota.getMonth() + 1);
+                }
+                datosAIngresar.push("UPDATE Tarjetas SET dineroGastado += " + montoCuota + " WHERE nroTarjeta = " + nroTarjeta);
+              }
+              respuestas.push('El proceso de compra se realizo con exito')
+              movs.push("{\"cbuOrigen\":\"" + cbuEntidadCredito + "\",\"cbuDestino\":\"" + JSON.parse(cbuEntidad)[0]['cbuDestino'] + "\",\"monto\":" + monto + ",\"descripcion\":\"Pago\"}");
             }
-            respuestas.push('El proceso de compra se realizo con exito')
+            else {
+              respuestas.push('Pago rechazado por saldo insuficiente')
+            }
           }
           else {
-            respuestas.push('Pago rechazado por saldo insuficiente')
+            respuestas.push('Tarjeta no existente o codigo de seguridad erroneo')
           }
+        });
+        request = new Request(datosAIngresar.join(" "), function (err) {
+          if (err) {
+            console.log(err);
+          }
+        });
+        connection.execSql(request);
+        if (movs.length > 0) {
+          var obj = {
+            "movimientos": "[" + movs + "]",
+            "user": "entidadcredito",
+            "origenMovimiento": "Pago tarjeta"
+          }
+          console.log(JSON.stringify(obj))
+          fetch('https://bancaservice.azurewebsites.net/api/integration/transferir', {
+            method: "POST",
+            body: JSON.stringify(obj),
+            headers: { 'Content-Type': 'application/json' },
+          }).then(res => res.json())
+            .then(json => console.log(json));
         }
-        else {
-          respuestas.push('Tarjeta no existente o codigo de seguridad erroneo')
-        }
+        res.json(respuestas);
       });
-      request = new Request(datosAIngresar.join(" "), function (err) {
-        if (err) {
-          console.log(err);
-        }
-      });
-      connection.execSql(request);
-      res.json(respuestas);
     });
   }),
 
@@ -540,25 +550,19 @@ app.use(
                 });
                 connection.execSql(request);
               }
-              /*var obj = { movimientos:[{'cbuOrigen': cbuEntidadCredito, 'cbuDestino' : JSON.parse(cbuEntidad)[0]['cbuDestino'], 'monto': monto, 'descripcion': 'Pago'}],
-                user : 'tarjeta01',
-                origenMovimiento : 'origen01' };
-              console.log(JSON.stringify(obj))*/
               var obj = {
-                "movimientos": "[{\"cbuOrigen\":\"" +cbuEntidadCredito+ "\",\"cbuDestino\":\""+JSON.parse(cbuEntidad)[0]['cbuDestino']+"\",\"monto\":"+monto+",\"descripcion\":\"pago\"}]",
-                "user": "pepe",
-                "origenMovimiento": "origen1"
+                "movimientos": "[{\"cbuOrigen\":\"" + cbuEntidadCredito + "\",\"cbuDestino\":\"" + JSON.parse(cbuEntidad)[0]['cbuDestino'] + "\",\"monto\":" + monto + ",\"descripcion\":\"Pago\"}]",
+                "user": "entidadcredito",
+                "origenMovimiento": "Pago tarjeta"
               }
               console.log(JSON.stringify(obj))
-              
-            fetch('https://bancaservice.azurewebsites.net/api/integration/transferir', {
-              method: "POST",
-              body: JSON.stringify(obj),
-              headers: { 'Content-Type': 'application/json' },
-            }).then(res => res.json())
-              .then(json => console.log(json));
-              
-          });
+              fetch('https://bancaservice.azurewebsites.net/api/integration/transferir', {
+                method: "POST",
+                body: JSON.stringify(obj),
+                headers: { 'Content-Type': 'application/json' },
+              }).then(res => res.json())
+                .then(json => console.log(json));
+            });
             res.status(200).json('El proceso de compra se realizo con exito');
           }
           else {
