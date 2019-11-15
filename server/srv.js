@@ -502,7 +502,6 @@ app.use(
           habilitado = result;
           if (habilitado) {
             getCbuEntidad(idEntidad, function (cbuEntidad) {
-              var obj = JSON.parse(cbuEntidad);
               var fechaHoy = new Date();
               if (cuotas == 1) {
                 montoReal = monto;
@@ -541,20 +540,19 @@ app.use(
                 });
                 connection.execSql(request);
               }
-              obj.forEach(element => {
-                element['monto'] = monto;
-                element['cbuOrigen'] = cbuEntidadCredito;
-                element['descripcion'] = 'Pago';
-              });
-              obj = JSON.stringify(obj);
-              fetch('https://bancaservice.azurewebsites.net/api/integration/transferir?movimientos=' +
-                obj + '&user=tarjeta01&origenMovimiento=origen1', {
-                method: "POST",
-                body: JSON.stringify(''),
-                headers: { 'Content-Type': 'application/json' },
-              }).then(res => res.json())
-                .then(json => console.log(json));
-            });
+              var obj = { movimientos:[{'cbuOrigen': cbuEntidadCredito, 'cbuDestino' : JSON.parse(cbuEntidad)[0]['cbuDestino'], 'monto': monto, 'descripcion': 'Pago'}],
+                user : 'tarjeta01',
+                origenMovimiento : 'origen01' };
+              console.log(JSON.stringify(obj))
+              
+            fetch('https://bancaservice.azurewebsites.net/api/integration/transferir', {
+              method: "POST",
+              body: JSON.stringify(obj),
+              headers: { 'Content-Type': 'application/json' },
+            }).then(res => res.json())
+              .then(json => console.log(json));
+              
+          });
             res.status(200).json('El proceso de compra se realizo con exito');
           }
           else {
@@ -573,18 +571,6 @@ function verificarTarjetaConCodigo(result, nroTarjeta, codSeg) {
   var rta = false;
   result.forEach(element => {
     if (element['nroTarjeta'] == nroTarjeta && element['codSeg'] == codSeg) {
-      rta = true;
-    }
-  });
-  return rta;
-}
-
-function verificarHabilitado(result, nroTarjeta, monto) {
-  result = JSON.parse(result);
-  var rta = false;
-  result.forEach(element => {
-    if (element['nroTarjeta'] == nroTarjeta && element['limite'] >= (element['dineroGastado'] + monto)) {
-      element['dineroGastado'] = element['dineroGastado'] + monto;
       rta = true;
     }
   });
