@@ -540,9 +540,15 @@ app.use(
                 });
                 connection.execSql(request);
               }
-              var obj = { movimientos:[{'cbuOrigen': cbuEntidadCredito, 'cbuDestino' : JSON.parse(cbuEntidad)[0]['cbuDestino'], 'monto': monto, 'descripcion': 'Pago'}],
+              /*var obj = { movimientos:[{'cbuOrigen': cbuEntidadCredito, 'cbuDestino' : JSON.parse(cbuEntidad)[0]['cbuDestino'], 'monto': monto, 'descripcion': 'Pago'}],
                 user : 'tarjeta01',
                 origenMovimiento : 'origen01' };
+              console.log(JSON.stringify(obj))*/
+              var obj = {
+                "movimientos": "[{\"cbuOrigen\":\"" +cbuEntidadCredito+ "\",\"cbuDestino\":\""+JSON.parse(cbuEntidad)[0]['cbuDestino']+"\",\"monto\":"+monto+",\"descripcion\":\"pago\"}]",
+                "user": "pepe",
+                "origenMovimiento": "origen1"
+              }
               console.log(JSON.stringify(obj))
               
             fetch('https://bancaservice.azurewebsites.net/api/integration/transferir', {
