@@ -1,5 +1,4 @@
 const Connection = require('tedious').Connection;
-//const Request = require('tedious').Request;
 var express = require('express');
 var app = express();
 const router = express.Router();
@@ -8,8 +7,8 @@ var schedule = require('node-schedule');
 const fetch = require('node-fetch');
 var cors = require('cors');
 
-/*var config = {
-  server: 'entidadcreditosrv.database.windows.net',
+var config = {
+  server: 'srvtarjetacredito.database.windows.net',
   authentication: {
     type: 'default',
     options: {
@@ -20,10 +19,11 @@ var cors = require('cors');
   options: {
     // If you are on Microsoft Azure, you need encryption:
     encrypt: true,
-    database: 'entidadCreditoBD'
+    database: 'tarjetaCreditoDB'
   }
-};*/
+};
 
+/*
 var config = {
   server: 'localhost',
   authentication: {
@@ -39,6 +39,7 @@ var config = {
     database: 'integradasTPO'
   }
 };
+*/
 
 const connection = new Connection(config);
 connection.on('connect', function (err) {
